@@ -1,6 +1,8 @@
-# {{SESSION_TITLE}}
+# Copilot UX Components: From zero to hero
 
-This repository contains the materials, demos, and resources used during the session **{{SESSION_TITLE}}**.
+This repository contains the materials, demos, and resources used during the session **Copilot UX Components: From zero to hero**.
+
+![sp-copilot-apps](./assets/sharepoint-copilot-apps-from-zero-to-hero_manez_1310981_banner.jpeg)
 
 ## 📚 Repository contents
 
