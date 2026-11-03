@@ -1,0 +1,16 @@
+{
+  "$schema": "../node_modules/@microsoft/spfx-heft-plugins/lib-commonjs/plugins/copilotAgentPlugin/copilot-agent.schema.json",
+  "agents": [
+    {
+      "name": {
+        "default": "ExpertFinder Agent"
+      },
+      "description": {
+        "default": "ExpertFinder description"
+      },
+      "components": [
+        "980d322c-2c03-4d8b-a05a-6b724ee174a1"
+      ]
+    }
+  ]
+}
