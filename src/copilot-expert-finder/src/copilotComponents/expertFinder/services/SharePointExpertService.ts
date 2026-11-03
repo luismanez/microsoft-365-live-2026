@@ -9,7 +9,7 @@ const responseSchema = z.object({
   value: z.array(z.object({
     Id: z.number(), Title: z.string().min(1), Skill: z.string(),
     ShortCV: z.string().nullish(), Department: z.string().nullish(),
-    Expert: z.object({ Id: z.number(), Title: z.string().min(1), Name: z.string().nullish() })
+    Expert: z.object({ Id: z.number(), Title: z.string().min(1), Name: z.string().nullish(), EMail: z.unknown().optional() })
   })),
   'odata.nextLink': z.string().optional(),
   '@odata.nextLink': z.string().optional()
@@ -33,7 +33,7 @@ export class SharePointExpertService implements IExpertService {
 
   private async _readExperts(skill: ExpertSkill): Promise<Expert[]> {
     const query = new URLSearchParams({
-      '$select': 'Id,Title,Skill,ShortCV,Department,Expert/Id,Expert/Title,Expert/Name',
+      '$select': 'Id,Title,Skill,ShortCV,Department,Expert/Id,Expert/Title,Expert/Name,Expert/EMail',
       '$expand': 'Expert', '$filter': `Skill eq '${escapeLiteral(skill)}'`, '$orderby': 'Id asc', '$top': '100'
     });
     const url = `${this._siteUrl}/_api/web/lists/getbytitle('${encodeURIComponent(escapeLiteral(this._listTitle))}')/items?${query.toString()}`;
@@ -61,9 +61,11 @@ export class SharePointExpertService implements IExpertService {
       const prefix = 'i:0#.f|membership|';
       const principal = login.indexOf(prefix) === 0 ? login.substring(prefix.length) : undefined;
       const userPrincipalName = getTeamsChatUrl(principal) ? principal : undefined;
+      const email = z.email().safeParse(typeof item.Expert.EMail === 'string' ? item.Expert.EMail.trim() : undefined);
       return {
         id: String(item.Id), displayName: item.Expert.Title, jobTitle: item.Title,
-        skill, shortCV: item.ShortCV || '', department: item.Department || '', userPrincipalName
+        skill, shortCV: item.ShortCV || '', department: item.Department || '', userPrincipalName,
+        email: email.success ? email.data : undefined
       };
     });
   }

@@ -2,6 +2,7 @@ import type { ICopilotComponentHostContext } from '@microsoft/sp-copilot-compone
 import type { ExpertSkill } from '../models/Expert';
 import type { IExpertService } from '../services/IExpertService';
 import type { GraphPhotoService } from '../services/GraphPhotoService';
+import type { GraphAvailabilityService } from '../services/GraphAvailabilityService';
 
 export interface IExpertFinderProps {
   skill?: ExpertSkill;
@@ -9,6 +10,7 @@ export interface IExpertFinderProps {
   configurationError?: string;
   service?: IExpertService;
   photoService?: GraphPhotoService;
+  availabilityService?: GraphAvailabilityService;
   isDemo: boolean;
   hostContext: ICopilotComponentHostContext;
   targetDocument: Document;

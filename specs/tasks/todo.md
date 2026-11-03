@@ -1,6 +1,6 @@
 # Expert Finder demo checklist
 
-The baseline and Graph photo source/documentation are implemented locally. External acceptance remains pending. Checked tasks have local evidence below. Tasks needing real Workbench, tenant or dialog interaction remain unchecked until that acceptance is verified; their code can already be implemented. No automated test suites are being added.
+The baseline and Graph photo source/documentation are implemented locally. Expert availability is also implemented locally; its host acceptance remains pending. External acceptance remains pending. Checked tasks have local evidence below. Tasks needing real Workbench, tenant or dialog interaction remain unchecked until that acceptance is verified; their code can already be implemented. No automated test suites are being added.
 
 ## Skill scoped mock data
 
@@ -44,6 +44,13 @@ The baseline and Graph photo source/documentation are implemented locally. Exter
 - [ ] **GP-02** — [Show progressive avatars in the existing UI](plan.md#gp-02-show-progressive-avatars) — source implemented; host acceptance pending
 - [ ] **GP-03** — [Build, check the demo and update current docs](plan.md#gp-03-build-and-check-the-demo) — build/docs complete; tenant checks pending
 
+## Expert availability panel — host acceptance pending
+
+- [x] **AV-01** — [Read one expert's free/busy](../expert-availability/tasks.md#av-01)
+- [ ] **AV-02** — [Render the compact Availability panel](../expert-availability/tasks.md#av-02) — source implemented; host visual checks pending
+- [ ] **AV-03** — [Connect selection in fullscreen cards](../expert-availability/tasks.md#av-03) — source/build complete; host lifecycle checks pending
+- [ ] **AV-04** — [Prepare and validate the conference demonstration](../expert-availability/tasks.md#av-04) — build/docs complete; tenant rehearsal pending
+
 ## Final practical checks
 
 - [x] Production build passes and the sppkg/agent ZIP include the required local assets.
@@ -83,3 +90,13 @@ The user approved the demo convention: Experts is in the tenant root. Selection 
 - GP-02: the app renders SharePoint results independently and starts all photos for the small result set in parallel. Photo/image-loading state lives above inline/fullscreen, with circular 48/72 px Fluent Skeletons until image load and initials on failure. A separate five-second image-load limit prevents indefinite shimmer. Mock mode retains local portraits and creates no Graph loader. Compilation/lint passed; actual host visuals, mode/filter behavior and licensed/unlicensed user photos remain pending.
 - GP-03: `npm run build` exited 0 with no TypeScript or lint warnings/errors. The generated sppkg and current agent ZIP passed archive integrity inspection; the packaged production bundle includes the Graph photo endpoint and omits the previous SharePoint photo URL. README, setup, deployment and CLI permission docs now describe the implementation. Local Markdown links and `git diff --check` passed. No unit tests, browser automation, tenant changes or deployment were performed.
 - Manual acceptance still required in Workbench and Copilot: authenticated SPFx photo access, the unlicensed user's uploaded photo, unavailable-photo fallback, both themes, no repeat Graph loads across fullscreen/filters, and cold/warm first-three-photo timing. The 1–2 second target is unmeasured. Graph Explorer success alone does not verify the component's authorization. GP-02/GP-03 remain unchecked for those host checks.
+
+### Expert Availability Panel implementation (2026-11-03)
+
+- AV-01: added optional SMTP email from Person EMail without changing the Teams/photo UPN, a small typed slot model and GraphAvailabilityService. The service uses the existing delegated SPFx Graph factory and posts exactly one SMTP schedule to `/me/calendar/getSchedule`, with UTC boundaries for local 09:00–18:00 and a 30-minute interval. Source review confirms validated codes, per-schedule error handling, no raw event details in UI state, a ten-second logical timeout and friendly HTTP/mailbox/sharing/service errors. Missing or invalid email is optional in the model and does not fail response-schema validation. Actual SharePoint SMTP projection and calendar access are unverified in the tenant.
+- AV-02: implemented the compact panel with 18 text-marked, keyboard-focusable Fluent tooltip slots, a labeled legend, current-slot outline, viewing date/zone, local loading and explicit unavailable/error/Refresh states. Only a local minute clock updates automatically. No calendar cache or Graph polling was added; unavailable/invalid data is never shown as Free. Visual, keyboard and actual host runtime checks remain pending.
+- AV-03: connected only the selected fullscreen card. Selection is idempotent, clears when hidden by filters or when fullscreen/skill changes, and old panel requests are ignored through cleanup and identity guards. Mock profiles/missing email make no calendar request. Search, GraphPhotoService and ExpertActions were preserved. Actual A→B, duplicate-click, filter/mode request-count and regression checks remain pending.
+- AV-04: TypeScript checks passed after AV-01 and AV-02. Final `npm run build` exited 0 without TypeScript/lint warnings/errors; the existing Jest stage found no tests, and no test suite was added. Both the sppkg and current agent ZIP passed CRC integrity checks; the production bundle contains both calendar and photo endpoints. The package has no webApiPermissionRequests; dependency manifests and existing photo/contact implementation files are unchanged. Documentation links/anchors and nine shell examples passed static validation without executing consent commands.
+- Native Date conversion was inspected locally in Node with TZ=Europe/Madrid: Jan 15 maps 09:00–18:00 to 08:00–17:00 UTC; Jul 15 and Mar 29 map to 07:00–16:00 UTC; Oct 25 maps to 08:00–17:00 UTC. All four ranges contain 18 half-hour slots. This is a local time-conversion spot check, not Graph/Outlook/browser acceptance.
+- README, SMTP list notes, the scope-preserving M365 CLI guide and the live conference segment are updated. The previously reported Calendars.Read grant has not been rechecked or changed. No live calendar requests, tenant changes, calendar writes, browser automation, new dependencies or unit tests were performed/added.
+- Remaining manual acceptance: effective SPFx calendar consent; selected non-family expert with an accessible Exchange mailbox; comparison against Outlook for all four states and time zones/DST; missing email/mailbox and policy/401/403/404/429/empty/per-schedule/network failure states; current-slot boundaries; Refresh; rapid A→B; filter/mode behavior; both themes and narrow cards. AV-02/AV-03/AV-04 remain unchecked until these host checks have actual results.

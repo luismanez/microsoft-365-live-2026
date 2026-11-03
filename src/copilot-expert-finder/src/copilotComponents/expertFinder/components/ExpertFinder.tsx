@@ -88,7 +88,8 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
             : loading ? <div className={styles.state} role="status"><Spinner label={`Finding experts in ${skill}…`} /></div>
             : results.status === 'error' ? <div className={styles.state} role="alert"><p className={styles.message}>{results.error}</p><Button onClick={() => setRetry(value => value + 1)}>Try again</Button></div>
             : experts.length === 0 ? <div className={styles.state} role="status"><Search24Regular /><strong>No experts found in {skill}</strong><p className={styles.message}>Try another skill by asking Copilot a new question.</p></div>
-            : fullscreen ? <ExpertFinderFullscreen experts={experts} photos={photos} onPhotoSettled={settlePhoto}
+            : fullscreen ? <ExpertFinderFullscreen key={skill} experts={experts} photos={photos} onPhotoSettled={settlePhoto}
+              availabilityService={props.availabilityService}
               filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
             : <><p className={styles.count} role="status">{experts.length} {experts.length === 1 ? 'expert' : 'experts'} found</p>
               <ExpertFinderInline experts={experts} photos={photos} onPhotoSettled={settlePhoto}

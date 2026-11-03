@@ -42,7 +42,7 @@ The selection is made once per component instance, before the first React render
 
 When SharePoint is selected, a second authenticated delegated GET retrieves matching items with `$filter=Skill eq 'SPFx'` (canonical value), a minimal `$select`, `$expand=Expert`, and `$top=100`. The service never reads the directory or the whole list as a search strategy. An unexpected continuation is reported instead of displaying a misleading truncated count; keep this conference list small.
 
-The Person projection uses Id, Title and Name. Standard SharePoint Online membership claims (`i:0#.f|membership|UPN`) supply the UPN. EMail is intentionally not requested: email is unnecessary for this UI and is not proof of a Teams UPN. Unresolved/nonstandard claims render the profile with contact unavailable and initials.
+The Person projection uses Id, Title, Name and EMail. Standard SharePoint Online membership claims (`i:0#.f|membership|UPN`) supply the UPN for photos/Teams. EMail separately supplies the SMTP address for calendar free/busy and is not substituted for the Teams UPN. Missing, empty or invalid email is mapped to undefined without rejecting the expert record. Unresolved/nonstandard claims render the profile with Teams contact unavailable and initials. No custom Email list column is needed.
 
 ## Profile photos
 
@@ -54,10 +54,22 @@ The loader shares one lazily acquired client and caches pending, successful and 
 
 Follow [Graph photo permissions with M365 CLI](graph-permissions.md) to reuse compatible delegated consent or grant `ProfilePhoto.Read.All` when missing. The conference tenant already has `User.ReadBasic.All`; its consent is reused. The package does not request additional permissions.
 
+## Calendar availability
+
+In fullscreen, Check availability selects one expert and opens their calendar panel. The component posts to Graph v1.0 `/me/calendar/getSchedule` with `schedules: [expert.email]` and `availabilityViewInterval: 30`. `/me` is the signed-in caller. The expert is identified by the Person field's SMTP email, never a display name or an assumed UPN/email match.
+
+Today's 09:00–18:00 window is constructed in the viewing browser's local time zone and each boundary is converted to UTC. The 18 returned codes are displayed as local half-hour slots: Free (including Working Elsewhere), Tentative, Busy and Out of Office. Letter markers, labels/tooltips and a current-slot outline supplement the theme colors. Only availability codes enter UI state; returned event details are discarded. An invalid/empty response or per-schedule error never becomes a Free timeline.
+
+There is no calendar prefetch, persistent cache or Graph polling. The current panel keeps its result until Refresh or unmount; its minute timer only updates the current-slot marker. Selecting another expert, filtering the selected expert out, changing skill or leaving fullscreen clears it. A ten-second logical request timeout and effect cleanup keep slow/stale requests from changing the active panel; the transport is not cancelled. Missing SMTP, mock mode, missing mailbox, permissions and sharing failures leave the rest of the application usable. Refresh/retry is available for request failures.
+
+Follow the [CLI consent guide](graph-permissions.md) to check compatible calendar permissions. An accessible Exchange mailbox and appropriate calendar sharing are separate prerequisites: a working Entra profile photo alone does not establish calendar access. Choose a non-family demo expert with a working calendar for the success case; a user without a mailbox demonstrates the unavailable state. The component does not create mailboxes, change licenses or create calendar events.
+
 ## Check with the tenant
 
 In your controlled tenant, check source selection with the root list absent (404), present, and present but empty. Verify that an explicit 403 or network error is shown rather than activating mocks. Then use an authorized account and, where available, another account with genuinely restricted list/item access. Verify filtered network requests, counts, Person names, photos, UPN chat navigation, permission failures, and the no-results case. Check the local name/department/role filters make no new GETs. If the selected list later disappears, or an item request is denied, slow or malformed, an understandable error is shown; there is no second fallback. Reload to perform source selection again. No automatic tenant writes, messages or meetings are performed.
 
 The provider and automatic selection are implemented locally. Actual tenant availability responses, projection/photo behavior and permissions still need validation in your environment.
+
+Calendar host checks are also pending: verify Person SMTP projection, a successful selected expert, unavailable mailbox/email, denied access, Refresh, rapid A→B selection, no calendar calls on inline/search, and the displayed range against Outlook. Use local browser time-zone inspection for winter/summer and DST boundaries. No tenant changes are performed by this implementation.
 
 References: [SharePoint REST query operations](https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/use-odata-query-operations-in-sharepoint-rest-requests), [Teams UPN chat links](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/deep-link-teams).

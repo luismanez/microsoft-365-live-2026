@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Card, makeStyles, tokens } from '@fluentui/react-components';
-import { PeopleTeam20Regular } from '@fluentui/react-icons';
+import { Button, Card, makeStyles, tokens, useId } from '@fluentui/react-components';
+import { CalendarClock20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
 import type { Expert, ExpertPhoto } from '../models/Expert';
+import type { GraphAvailabilityService } from '../services/GraphAvailabilityService';
 import { ExpertAvatar } from './ExpertAvatar';
 import { ExpertActions } from './ExpertActions';
+import { ExpertAvailabilityPanel } from './ExpertAvailabilityPanel';
 
 const useStyles = makeStyles({
   card: { padding: '24px', borderRadius: '16px', border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -17,11 +19,13 @@ const useStyles = makeStyles({
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`, color: tokens.colorNeutralForeground2, fontSize: '13px' }
 });
 
-export function ExpertCard({ expert, photo, onPhotoSettled, isDemo, onOpenLink }: {
+export function ExpertCard({ expert, photo, onPhotoSettled, availabilityService, availabilitySelected, onCheckAvailability, isDemo, onOpenLink }: {
   expert: Expert; photo?: ExpertPhoto; onPhotoSettled: (id: string, failed: boolean) => void;
+  availabilityService?: GraphAvailabilityService; availabilitySelected: boolean; onCheckAvailability: () => void;
   isDemo: boolean; onOpenLink: (url: string) => Promise<void>;
 }): React.ReactElement {
   const styles = useStyles();
+  const availabilityId = useId('expert-availability-');
   return <Card className={styles.card}>
     <div className={styles.person}>
       <ExpertAvatar expert={expert} photo={photo} onPhotoSettled={onPhotoSettled} size={72} />
@@ -30,5 +34,9 @@ export function ExpertCard({ expert, photo, onPhotoSettled, isDemo, onOpenLink }
     <p className={styles.summary}>{expert.shortCV || 'No professional summary provided.'}</p>
     <div className={styles.department}><PeopleTeam20Regular aria-hidden="true" />{expert.department || 'Department not specified'}</div>
     <ExpertActions expert={expert} isDemo={isDemo} onOpenLink={onOpenLink} />
+    <Button appearance="subtle" icon={<CalendarClock20Regular />} onClick={onCheckAvailability}
+      aria-label={`Check availability for ${expert.displayName}`} aria-expanded={availabilitySelected}
+      aria-controls={availabilitySelected ? availabilityId : undefined}>Check availability</Button>
+    {availabilitySelected && <ExpertAvailabilityPanel id={availabilityId} expert={expert} service={availabilityService} isDemo={isDemo} />}
   </Card>;
 }

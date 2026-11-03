@@ -8,6 +8,7 @@ export interface Expert {
   readonly shortCV: string;
   readonly department: string;
   readonly userPrincipalName?: string;
+  readonly email?: string;
   readonly photoUrl?: string;
 }
 

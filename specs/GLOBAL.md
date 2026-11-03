@@ -29,6 +29,7 @@ export interface Expert {
   readonly shortCV: string;
   readonly department: string;
   readonly userPrincipalName?: string;
+  readonly email?: string;
   readonly photoUrl?: string;
 }
 
@@ -89,7 +90,15 @@ Use real accessible labels, useful names for icon buttons, visible focus, readab
 
 ## Contact actions
 
-Live Chat in Teams opens the supported HTTPS chat deep link with a verified, encoded UPN via the host bridge; it sends no message. Fictional mock contacts open a clearly labeled preview instead of launching a chat for an invented account. Schedule opens a clearly labeled demo dialog saying no meeting has been created. Do not implement calendar access, availability, or presence.
+Live Chat in Teams opens the supported HTTPS chat deep link with a verified, encoded UPN via the host bridge; it sends no message. Fictional mock contacts open a clearly labeled preview instead of launching a chat for an invented account. Schedule opens a clearly labeled demo dialog saying no meeting has been created. Calendar writes, meeting creation and presence remain outside scope. The separate Availability Panel permits only an on-demand free/busy read for one selected expert.
+
+## Availability panel
+
+The [Expert Availability Panel](expert-availability/spec.md) is implemented locally following [four tasks](expert-availability/tasks.md); actual host/tenant acceptance remains pending. Check availability opens only the selected fullscreen card's panel. GraphAvailabilityService uses the existing SPFx Graph factory for today's local 09:00–18:00, normalized to UTC, with 18 half-hour free/busy slots and a ten-second logical timeout. The typed boundary discards event details and rejects empty, malformed or failed availability instead of inventing Free slots. Optional Expert.email comes from Person EMail; the UPN still serves photos/Teams. No list column was added.
+
+The panel has local loading, accessible text markers/tooltips, both-theme semantic colors, a current-slot clock and explicit Refresh/retry. Only its active result is retained; selecting another expert, filtering it out, changing skill or leaving fullscreen clears the panel and ignores stale responses. There is no calendar prefetch or persistent cache. Missing email and mock mode make no calendar request. Search, photo caching and contact/Schedule behavior remain independent.
+
+Calendar reads supersede the previous blanket exclusion of availability; Schedule remains a demo preview. Keep the no-unit-tests quality bar and CLI consent workflow. Recheck the previously observed Calendars.Read grant before considering Calendars.ReadBasic. No webApiPermissionRequests, tenant changes or additional dependencies were added. A working Graph photo does not prove mailbox access. Status and observed results remain in tasks/todo.md.
 
 ## Minimal code organization
 

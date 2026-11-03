@@ -60,3 +60,7 @@ Run `npm run build`. Manually check Workbench and Copilot with licensed/unlicens
 **Acceptance:** build passes, available manual results are recorded, unavailable checks stay pending, and README/setup/deployment/permission docs reflect the implemented photo source. Graph Explorer success alone does not verify component access. No deployment or tenant permission changes are needed. Depends on GP-01 and GP-02.
 
 **References:** [Graph photo endpoint and permissions](https://learn.microsoft.com/en-us/graph/api/profilephoto-get?view=graph-rest-1.0), [SPFx MSGraphClientV3](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/use-msgraph).
+
+## Expert availability panel
+
+Planned extension: follow [the feature spec](../expert-availability/spec.md) and [four tasks](../expert-availability/tasks.md) in order: AV-01 calendar read → AV-02 compact panel → AV-03 fullscreen selection → AV-04 demo validation/docs. The feature tasks include a single implementation prompt. Existing unfinished host checks remain open; this extension does not reimplement them or change their status. No application code or tenant changes are part of this planning update.
