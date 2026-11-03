@@ -1,97 +1,60 @@
 import * as React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-
 import { BaseCopilotComponent } from '@microsoft/sp-copilot-component';
-import type { SPCopilotDisplayMode } from '@microsoft/sp-copilot-component';
-import type { MSGraphClientV3 } from '@microsoft/sp-http';
-import { SPHttpClient, type SPHttpClientResponse } from '@microsoft/sp-http';
-
 import ExpertFinder from './components/ExpertFinder';
 import type { IExpertFinderProps } from './components/IExpertFinderProps';
-import type { IExpertFinderCopilotComponentProperties } from './ExpertFinderCopilotComponentProperties';
+import { propertiesSchema, type IExpertFinderCopilotComponentProperties } from './ExpertFinderCopilotComponentProperties';
+import type { IExpertService } from './services/IExpertService';
+import { createExpertService } from './services/createExpertService';
+import { normalizeSkill } from './utils/skills';
 
-import * as strings from 'ExpertFinderCopilotComponentStrings';
-
-/**
- * SPFx Copilot Component that renders a React-based UI demonstrating the
- * platform's headline capabilities:
- *
- * - **Brokered SSO data calls** — Microsoft Graph (`/me`) and SharePoint REST
- *   (`/_api/web`) with zero token code. The SPFx runtime's Pairwise Broker
- *   automatically provisions tokens for `SPHttpClient` and `MSGraphClientV3`.
- *
- * - **Host context & theming** — reads `hostContext.theme` and
- *   `hostContext.displayMode` to adapt to the Copilot host environment.
- *
- * - **Bridge actions** — demonstrates `requestDisplayModeAsync`,
- *   `openLinkAsync`, `sendFollowUpMessageAsync`, and `requestSizeChangeAsync`.
- *
- * Lifecycle:
- *  1. `onInit()` — fetches user and site data (runs once before first render).
- *  2. `render()` — mounts the React tree into `this.context.domElement`.
- *     Re-invoked by the framework on host-context changes.
- *  3. `onTeardown()` — unmounts React before the host tears down the iframe.
- */
 export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<IExpertFinderCopilotComponentProperties> {
-  private _userDisplayName: string = '';
-  private _siteTitle: string = '';
-  private _siteUrl: string = '';
   private _root: Root | undefined;
+  private _service: IExpertService | undefined;
+  private _isDemo: boolean = false;
+  private _configurationError: string | undefined;
 
   protected async onInit(): Promise<void> {
-    this._siteUrl = this.context.pageContext.web.absoluteUrl;
-
-    // Fetch user info from Microsoft Graph (brokered SSO — no token code needed).
-    // Wrapped in try/catch so the component still renders in the workbench where
-    // real services may not be available.
     try {
-      const graphClient: MSGraphClientV3 = await this.context.msGraphClientFactory.getClient('3');
-      const me: { displayName?: string } = await graphClient.api('/me').select('displayName').get();
-      this._userDisplayName = me.displayName || 'User';
-    } catch {
-      this._userDisplayName = this.context.pageContext.user?.displayName || 'User';
-    }
-
-    // Fetch site info from SharePoint REST API (brokered SSO).
-    try {
-      const response: SPHttpClientResponse = await this.context.spHttpClient.get(
-        `${this._siteUrl}/_api/web?$select=Title`,
-        SPHttpClient.configurations.v1
-      );
-      const webInfo: { Title?: string } = await response.json();
-      this._siteTitle = webInfo.Title || 'SharePoint Site';
-    } catch {
-      this._siteTitle = 'SharePoint Site';
+      const selection = await createExpertService(this.context.spHttpClient, this.context.pageContext.web.absoluteUrl);
+      this._service = selection.service;
+      this._isDemo = selection.isDemo;
+    } catch (error) {
+      this._configurationError = error instanceof Error ? error.message : 'The expert data source could not be selected.';
     }
   }
 
+  private _requestFullscreen = async (): Promise<void> => {
+    const result = await this.requestDisplayModeAsync('fullscreen');
+    if (result.mode !== 'fullscreen') throw new Error('Fullscreen is not available in this host.');
+  };
+
+  private _openLink = async (url: string): Promise<void> => {
+    const result = await this.context.copilotBridge.openLinkAsync(url);
+    if (result.isError) throw new Error('The host could not open this link.');
+  };
+
   protected render(): void {
+    const input = propertiesSchema.safeParse(this.properties);
+    const skill = input.success ? normalizeSkill(input.data.skill) : undefined;
     const props: IExpertFinderProps = {
-      message: this.properties.message,
-      userDisplayName: this._userDisplayName,
-      siteTitle: this._siteTitle,
-      siteUrl: this._siteUrl,
+      skill,
+      inputError: skill ? undefined : 'Ask Copilot to find an expert in SPFx, Copilot, DB or Spanish.',
+      service: this._service,
+      isDemo: this._isDemo,
+      configurationError: this._configurationError,
       hostContext: this.hostContext,
-      bridge: this.context.copilotBridge,
-      onRequestDisplayMode: async (mode: SPCopilotDisplayMode) => {
-        await this.requestDisplayModeAsync(mode);
-      },
-      onRequestSizeChange: async (width: number, height: number) => {
-        await this.requestSizeChangeAsync(width, height);
-      },
       targetDocument: this.context.domElement.ownerDocument,
-      strings
+      onRequestFullscreen: this._requestFullscreen,
+      onOpenLink: this._openLink
     };
-
-    if (!this._root) {
-      this._root = createRoot(this.context.domElement);
-    }
-
+    if (!this._root) this._root = createRoot(this.context.domElement);
     this._root.render(React.createElement(ExpertFinder, props));
   }
 
-  protected async onTeardown(): Promise<void> {
+  protected onTeardown(): Promise<void> {
     this._root?.unmount();
     this._root = undefined;
+    return Promise.resolve();
   }
 }

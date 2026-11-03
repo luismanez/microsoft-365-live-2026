@@ -6,9 +6,9 @@ Commands run from `src/copilot-expert-finder`. File paths below are relative to 
 
 **Document list setup and sample data**
 
-Write concise instructions for Experts and a small seed file that can be mapped to tenant test users.
+Write concise instructions for Experts in the tenant root and a small seed file that can be mapped to tenant test users.
 
-- Acceptance: Use exact internal names and single-value Skill/Expert, plain-text ShortCV, and explicit user/site setup. No real tenant data is fabricated or provisioned automatically.
+- Acceptance: Use exact internal names and single-value Skill/Expert, plain-text ShortCV, and root-site/user setup. No real tenant data is fabricated or provisioned automatically.
 - Verification: Review the fields against GLOBAL.md; the tenant owner can follow the instructions for live setup.
 - Dependencies: DAT-02.
 - Likely files: docs/sharepoint-setup.md; docs/experts-sample-data.json.
@@ -26,11 +26,11 @@ Implement SharePointExpertService with canonical skill validation, safe OData/UR
 
 ## SP-03
 
-**Wire explicit data source selection**
+**Select data source from root list availability**
 
-Add one settings/provider factory and wire it into the existing entry. Keep mock as the initial demo default and require an explicit site for live mode.
+Use one asynchronous factory in onInit. Resolve the root from the context URL origin and check Experts once: HTTP 200 selects SharePoint, HTTP 404 selects mock, and other failures show an error. Remove expertFinderSettings.ts and its imports; the list name is fixed as Experts.
 
-- Acceptance: The same UI works with either service; host re-renders keep a stable provider. Mock/live labeling is clear and live errors remain errors.
-- Verification: Compile; switch modes deliberately in configuration and manually verify skill results, missing identity/photo behavior, and delegated access when the tenant is available.
+- Acceptance: Return service and isDemo together. The same UI works with either service; host re-renders keep the chosen provider and do not repeat the check. Empty lists or zero matches remain SharePoint results. Later item errors do not trigger fallback.
+- Verification: Compile; manually verify initial HTTP 200/404/403 selection in a controlled tenant, an existing empty list, skill results, source labels, and no repeat check on host/filter changes. No automated tests are added.
 - Dependencies: SP-02, INL-02.
-- Likely files: expertFinderSettings.ts; services/createExpertService.ts; ExpertFinderCopilotComponent.tsx; README.md.
+- Likely files: services/createExpertService.ts; ExpertFinderCopilotComponent.tsx; README.md; docs/sharepoint-setup.md (remove expertFinderSettings.ts).

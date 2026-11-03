@@ -20,7 +20,7 @@ Create the Expert model, IExpertService, and one canonical skill normalizer.
 Add fictional records and asynchronous skill-scoped retrieval with stable ordering.
 
 - Acceptance: SPFx returns 6, Copilot 8, DB 1, Spanish 0; no result for another skill reaches React.
-- Verification: Use these four skills in Workbench after INL-01; compile before that.
+- Verification: Use these four skills in Workbench after INL-01 with mock data selected (root-list check returns HTTP 404); compile before that.
 - Dependencies: DAT-01.
 - Likely files: data/mockExperts.ts; services/MockExpertService.ts.
 

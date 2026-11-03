@@ -4,7 +4,7 @@
 
 Demonstrate a useful visual application inside Microsoft 365 Copilot: a prompt identifies a skill, the agent invokes ExpertFinderTool, the component loads matching experts, and the user explores them inline or in fullscreen.
 
-Use the existing project at `src/copilot-expert-finder`. Inspected baseline: SPFx 1.24.1, React/React DOM 18.3.1, TypeScript 5.8.3 strict, Fluent UI v9 9.75.1, Zod 4.6.7, Heft 1.3.2. Reinspect before implementation. The current starter accepts message, makes demonstration Graph/site reads, and already wires createRoot, host context, FluentProvider targetDocument, and teardown. Preserve those useful lifecycle patterns and the existing component, solution, and agent IDs.
+Use the existing project at `src/copilot-expert-finder`. Inspected baseline: SPFx 1.24.1, React/React DOM 18.3.1, TypeScript 5.8.3 strict, Fluent UI v9 9.75.1, Zod 4.6.7, Heft 1.3.2. Reinspect before implementation. The initial scaffold accepted message and made demonstration Graph/site reads. The current implementation accepts skill, automatically selects a source from the root Experts list, and retains createRoot, host context, FluentProvider targetDocument, and teardown. Preserve those useful lifecycle patterns and the existing component, solution, and agent IDs.
 
 ## Demo quality bar
 
@@ -14,7 +14,7 @@ The implementation stages remain mock UI -> Copilot discovery -> SharePoint -> p
 
 ## Fixed input and domain contract
 
-ExpertFinderTool receives one required skill string. Validate raw arguments with Zod at runtime, trim/collapse whitespace, compare casing consistently, and normalize to one of SPFx, Copilot, DB, Spanish. Reject empty, overlong, malformed, or unsupported input before retrieval. An 80-character maximum is sufficient. Keep JSON Schema conversion compatible with the installed Zod/SPFx generator; avoid unsupported schema transforms.
+ExpertFinderTool receives one required skill string. Validate raw arguments with Zod at runtime, trim/collapse whitespace, compare casing consistently, and normalize to one of SPFx, Copilot, DB, Spanish. Reject empty, overlong, malformed, or unsupported input before querying expert items. The independent list-availability check occurs once during initialization. An 80-character maximum is sufficient. Keep JSON Schema conversion compatible with the installed Zod/SPFx generator; avoid unsupported schema transforms.
 
 Skill is fixed for an invocation. Changing it requires a new Copilot request. No Skill selector or All Skills option exists in the UI.
 
@@ -57,13 +57,13 @@ Final SharePoint list: Experts.
 
 SharePoint MUST filter on the server using Skill eq '<canonical value>'. Escape OData literals and encode query values, select only required fields, and expand the Person field. Use SPHttpClient with delegated user access. Never download the full list to search by skill or remove the filter as a fallback. This is a small demo list, not a large-directory search system; handle an unexpected continuation explicitly rather than silently reporting incomplete totals.
 
-Use one explicit settings module/provider factory outside React. Default to mock. Live mode requires an explicitly configured same-tenant SharePoint site and list; Copilot's current web context is not assumed to be that site. Settings are not tool parameters. Never silently replace a live error with mock results.
+Use one asynchronous provider factory outside React. Derive the tenant root from `new URL(this.context.pageContext.web.absoluteUrl).origin` and check `/_api/web/lists/getbytitle('Experts')?$select=Id` once when the component initializes. HTTP 200 selects SharePointExpertService; HTTP 404 selects MockExpertService. Other HTTP failures and network errors remain visible errors. Return the selected service and isDemo together so the source badge and contact behavior match the actual choice. No manual data-source, site-URL or list-name settings remain. An empty existing list or zero skill matches is an empty SharePoint result, never a reason to switch to mocks. Later item-read failures do not trigger another fallback; reload to select the source again. This supersedes the earlier explicit configuration/default-mock decision.
 
 Resolve Teams identity and photographs through supported SharePoint information where possible. A mail attribute does not guarantee the UPN required by Teams. If identity cannot be resolved, explain why contact is unavailable. Use a verified SharePoint photo mechanism with fallback; no extra Graph permissions or profile beta API.
 
 ## State and host behavior
 
-Instantiate the service once at the SPFx composition boundary. Keep one React root, mount through context.domElement, preserve targetDocument for Fluent styling, and clean up on teardown. Remove starter Graph /me and /_api/web requests that do not contribute to Expert Finder.
+Await source selection once in onInit at the SPFx composition boundary. This small metadata request completes before the first React render; React still owns loading the actual expert items. Keep one React root, mount through context.domElement, preserve targetDocument for Fluent styling, and clean up on teardown. Remove starter Graph /me and /_api/web requests that do not contribute to Expert Finder.
 
 The React root owns the invocation skill, fetched results/load state, and name/department/role filters. Derive visible results with a pure helper/useMemo. Read the effective host theme/mode directly; request fullscreen through the installed supported API and handle denial honestly.
 
@@ -91,7 +91,7 @@ Live Chat in Teams opens the supported HTTPS chat deep link with a verified, enc
 
 ## Minimal code organization
 
-Keep the entry class and adapt components/ExpertFinder.tsx as the app root. Add models/Expert.ts; utils/skills.ts and expertFilters.ts; services/IExpertService.ts, MockExpertService.ts, SharePointExpertService.ts; a small settings/provider factory; data/mockExperts.ts and local assets. Add inline/fullscreen/search/card/avatar/action components only as their responsibilities justify them. Avoid multiplying helper layers. Use strict TypeScript, hooks, existing formatting, English copy, and Fluent v9. Preserve existing localization where useful without an i18n overhaul.
+Keep the entry class and adapt components/ExpertFinder.tsx as the app root. Add models/Expert.ts; utils/skills.ts and expertFilters.ts; services/IExpertService.ts, MockExpertService.ts, SharePointExpertService.ts; a small asynchronous provider factory; data/mockExperts.ts and local assets. Add inline/fullscreen/search/card/avatar/action components only as their responsibilities justify them. Avoid multiplying helper layers. Use strict TypeScript, hooks, existing formatting, English copy, and Fluent v9. Preserve existing localization where useful without an i18n overhaul.
 
 ## Commands and checks
 
@@ -110,7 +110,7 @@ Do not change project watchers to fix an agent-sandbox-only fs.watch/EMFILE rest
 
 A future single implementation prompt may cover all local features without approval between each one. New dependencies or broader permissions need a concrete reason and approval. Tenant provisioning/seeding, package upload/sync, and publishing need the corresponding authorization. No secrets, raw HTML insertion, real messages/meetings, fake presence, or changes to Hello Copilot.
 
-External prerequisites: target site URL, correctly provisioned list and real test-user mappings, browser/tenant access, and a deployed/synced agent. Finish independent local work if one is unavailable; leave the corresponding manual checklist open and report the exact missing input. Do not manufacture publisher metadata, contact identities, screenshots, or successful host results.
+External prerequisites: browser/tenant access, root-site access for the availability check, a correctly provisioned root Experts list and real test-user mappings when showing live data, and a deployed/synced agent. A root-list HTTP 404 intentionally selects fictional demo data. Finish independent local work if one is unavailable; leave the corresponding manual checklist open and report the exact missing input. Do not manufacture publisher metadata, contact identities, screenshots, or successful host results.
 
 Local completion means the code, lawful assets, build/package, setup notes and demo runbook are ready. Host/tenant validation is complete only when the manual checks in tasks/todo.md have actual recorded results.
 
@@ -118,6 +118,7 @@ Local completion means the code, lawful assets, build/package, setup notes and d
 
 - [SPFx 1.24.1](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/release-1.24.1)
 - [Copilot UX overview](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/copilot/overview-copilot-apps)
+- [Copilot data context](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/copilot/access-data)
 - [First component / Workbench](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/copilot/get-started/build-your-first-copilot-app)
 - [SharePoint REST OData operations](https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/use-odata-query-operations-in-sharepoint-rest-requests)
 - [Teams chat links](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/deep-link-teams)

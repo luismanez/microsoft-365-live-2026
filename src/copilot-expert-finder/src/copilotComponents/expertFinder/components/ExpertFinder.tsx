@@ -1,144 +1,76 @@
 import * as React from 'react';
-import {
-  FluentProvider,
-  IdPrefixProvider,
-  webLightTheme,
-  webDarkTheme,
-  Title3,
-  Body1,
-  Badge,
-  Button,
-  Card,
-  CardHeader,
-  makeStyles,
-  tokens
-} from '@fluentui/react-components';
-import {
-  ArrowExpand24Regular,
-  Open24Regular,
-  Chat24Regular,
-  ResizeLarge24Regular
-} from '@fluentui/react-icons';
-import { createCopilotTextContent } from '@microsoft/sp-copilot-component';
-
+import { FluentProvider, IdPrefixProvider, teamsLightTheme, teamsDarkTheme, Spinner, Button, makeStyles, tokens } from '@fluentui/react-components';
+import { Search24Regular } from '@fluentui/react-icons';
+import type { Expert, ExpertSkill } from '../models/Expert';
 import type { IExpertFinderProps } from './IExpertFinderProps';
+import { ExpertFinderHeader } from './ExpertFinderHeader';
+import { ExpertFinderInline } from './ExpertFinderInline';
+import { ExpertFinderFullscreen } from './ExpertFinderFullscreen';
+import { emptyFilters } from '../utils/expertFilters';
 
 const useStyles = makeStyles({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalM,
-    padding: tokens.spacingHorizontalM
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalXS
-  },
-  badges: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalS,
-    flexWrap: 'wrap'
-  },
-  actions: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalS,
-    flexWrap: 'wrap'
-  }
+  root: { backgroundColor: tokens.colorNeutralBackground1, color: tokens.colorNeutralForeground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`, borderRadius: '20px', overflow: 'hidden', boxShadow: tokens.shadow8 },
+  body: { padding: '8px 24px 24px', '@media (max-width: 400px)': { paddingRight: '16px', paddingLeft: '16px' } },
+  count: { margin: '16px 0 4px', fontWeight: 600 },
+  state: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '40px 16px', textAlign: 'center' },
+  message: { margin: 0, color: tokens.colorNeutralForeground2, maxWidth: '420px', lineHeight: '22px' },
+  error: { padding: '12px', marginTop: '16px', borderRadius: '8px', backgroundColor: tokens.colorPaletteRedBackground1, color: tokens.colorPaletteRedForeground1 }
 });
 
-const EXPANDED_WIDTH: number = 600;
-const EXPANDED_HEIGHT: number = 400;
-const COMPACT_WIDTH: number = 400;
-const COMPACT_HEIGHT: number = 250;
+type Results = { skill?: ExpertSkill; status: 'loading' | 'ready' | 'error'; experts: Expert[]; error?: string };
 
-/**
- * Main React UI for the Copilot Component starter template.
- *
- * Demonstrates:
- * - **Theming** — wraps content in `<FluentProvider>` with a theme derived
- *   from the host's `hostContext.theme` (`'light' | 'dark'`).
- * - **Host context** — surfaces the current display mode, theme, and
- *   available display modes as live badges.
- * - **Bridge actions** — four buttons that exercise different bridge methods
- *   to show how a component communicates with the Copilot host.
- */
 export default function ExpertFinder(props: IExpertFinderProps): React.ReactElement {
-  const {
-    message, userDisplayName, siteTitle, siteUrl, hostContext,
-    bridge, onRequestDisplayMode, onRequestSizeChange, strings
-  } = props;
   const styles = useStyles();
+  const { skill, service } = props;
+  const [results, setResults] = React.useState<Results>({ status: 'loading', experts: [] });
+  const [retry, setRetry] = React.useState(0);
+  const [filters, setFilters] = React.useState({ ...emptyFilters });
+  const [expanding, setExpanding] = React.useState(false);
+  const [hostError, setHostError] = React.useState('');
+  React.useEffect(() => { setFilters({ ...emptyFilters }); setHostError(''); }, [skill]);
+  const fullscreen = props.hostContext.displayMode === 'fullscreen';
+  const canExpand = !fullscreen && (props.hostContext.availableDisplayModes || []).indexOf('fullscreen') !== -1;
 
-  const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
+  React.useEffect(() => {
+    if (!skill || !service) return;
+    let active = true;
+    setResults({ skill, status: 'loading', experts: [] });
+    service.getExpertsBySkill(skill).then(experts => {
+      if (active) setResults({ skill, status: 'ready', experts });
+    }).catch((error: unknown) => {
+      if (active) setResults({ skill, status: 'error', experts: [], error: error instanceof Error ? error.message : 'Unable to retrieve experts. Please try again.' });
+    });
+    return () => { active = false; };
+  }, [skill, service, retry]);
 
-  const theme = hostContext.theme === 'dark' ? webDarkTheme : webLightTheme;
+  const expand = async (): Promise<void> => {
+    setExpanding(true); setHostError('');
+    try { await props.onRequestFullscreen(); }
+    catch { setHostError('The host could not open fullscreen. You can keep using this view.'); }
+    finally { setExpanding(false); }
+  };
 
-  // Request the Copilot host to switch this component to fullscreen mode.
-  const handleExpand = React.useCallback(async (): Promise<void> => {
-    await onRequestDisplayMode('fullscreen');
-  }, [onRequestDisplayMode]);
+  const problem = props.inputError || props.configurationError || (!service ? 'The expert data source is not configured.' : undefined);
+  const loading = !problem && (results.skill !== skill || results.status === 'loading');
+  const experts = results.skill === skill ? results.experts : [];
 
-  // Ask the host to open the site URL in the user's browser.
-  const handleOpenLink = React.useCallback(async (): Promise<void> => {
-    await bridge.openLinkAsync(siteUrl);
-  }, [bridge, siteUrl]);
-
-  // Send a follow-up message into the Copilot conversation on behalf of the user.
-  // This triggers Copilot to respond, demonstrating how a component can drive the chat.
-  const handleFollowUp = React.useCallback(async (): Promise<void> => {
-    await bridge.sendFollowUpMessageAsync([
-      createCopilotTextContent(strings.FollowUpMessage.replace('{0}', siteTitle))
-    ]);
-  }, [bridge, siteTitle, strings]);
-
-  // Toggle between compact and expanded sizes by requesting a resize from the host.
-  const handleResize = React.useCallback(async (): Promise<void> => {
-    if (isExpanded) {
-      await onRequestSizeChange(COMPACT_WIDTH, COMPACT_HEIGHT);
-    } else {
-      await onRequestSizeChange(EXPANDED_WIDTH, EXPANDED_HEIGHT);
-    }
-    setIsExpanded(!isExpanded);
-  }, [onRequestSizeChange, isExpanded]);
-
-  return (
-    <IdPrefixProvider value="copilot-component-">
-      <FluentProvider theme={theme} targetDocument={props.targetDocument} style={{ minHeight: '100%' }}>
-        <div className={styles.root}>
-          <Card>
-            <CardHeader
-              header={<Title3>{strings.GreetingPrefix} {userDisplayName}!</Title3>}
-              description={<Body1>{message}</Body1>}
-            />
-
-            <div className={styles.badges}>
-              <Badge appearance="outline">{strings.SiteBadgePrefix} {siteTitle}</Badge>
-              <Badge appearance="outline" color="informative">
-                {strings.ThemeBadgePrefix} {hostContext.theme || strings.UnknownTheme}
-              </Badge>
-              <Badge appearance="outline" color="subtle">
-                {strings.ModeBadgePrefix} {hostContext.displayMode || strings.DefaultDisplayMode}
-              </Badge>
-            </div>
-          </Card>
-
-          <div className={styles.actions}>
-            <Button appearance="primary" icon={<ArrowExpand24Regular />} onClick={handleExpand}>
-              {strings.ExpandButtonLabel}
-            </Button>
-            <Button appearance="secondary" icon={<Open24Regular />} onClick={handleOpenLink}>
-              {strings.OpenSiteButtonLabel}
-            </Button>
-            <Button appearance="secondary" icon={<Chat24Regular />} onClick={handleFollowUp}>
-              {strings.FollowUpButtonLabel}
-            </Button>
-            <Button appearance="secondary" icon={<ResizeLarge24Regular />} onClick={handleResize}>
-              {isExpanded ? strings.CompactButtonLabel : strings.ResizeButtonLabel}
-            </Button>
-          </div>
+  return <IdPrefixProvider value="expert-finder-">
+    <FluentProvider theme={props.hostContext.theme === 'dark' ? teamsDarkTheme : teamsLightTheme} targetDocument={props.targetDocument}>
+      <section className={styles.root} aria-label="Expert Finder">
+        <ExpertFinderHeader skill={skill} isDemo={props.isDemo} fullscreen={fullscreen} />
+        <div className={styles.body}>
+          {problem ? <div className={styles.state} role="alert"><p className={styles.message}>{problem}</p></div>
+            : loading ? <div className={styles.state} role="status"><Spinner label={`Finding experts in ${skill}…`} /></div>
+            : results.status === 'error' ? <div className={styles.state} role="alert"><p className={styles.message}>{results.error}</p><Button onClick={() => setRetry(value => value + 1)}>Try again</Button></div>
+            : experts.length === 0 ? <div className={styles.state} role="status"><Search24Regular /><strong>No experts found in {skill}</strong><p className={styles.message}>Try another skill by asking Copilot a new question.</p></div>
+            : fullscreen ? <ExpertFinderFullscreen experts={experts} filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
+            : <><p className={styles.count} role="status">{experts.length} {experts.length === 1 ? 'expert' : 'experts'} found</p>
+              <ExpertFinderInline experts={experts} isDemo={props.isDemo} canExpand={canExpand} expanding={expanding}
+                onExpand={expand} onOpenLink={props.onOpenLink} /></>}
+          {hostError && <div className={styles.error} role="alert">{hostError}</div>}
         </div>
-      </FluentProvider>
-    </IdPrefixProvider>
-  );
+      </section>
+    </FluentProvider>
+  </IdPrefixProvider>;
 }

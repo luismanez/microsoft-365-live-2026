@@ -6,7 +6,7 @@
         "default": "ExpertFinder Agent"
       },
       "description": {
-        "default": "ExpertFinder description"
+        "default": "Find experts by skill and explore their profiles directly in Copilot."
       },
       "components": [
         "980d322c-2c03-4d8b-a05a-6b724ee174a1"

@@ -8,7 +8,7 @@ Commands run from `src/copilot-expert-finder`. File paths below are relative to 
 
 Run the existing production build, verify the sppkg/agent ZIP and local assets, and write the steps to install/sync the baseline agent.
 
-- Acceptance: Artifacts are concrete and usable for review; real publisher/site values still needed are named, not fabricated. Upload/sync remains separately authorized.
+- Acceptance: Artifacts are concrete and usable for review; real publisher values still needed are named, not fabricated. Upload/sync remains separately authorized.
 - Verification: Run npm run build; inspect the packages and start the local server to confirm the debug manifests are served.
 - Dependencies: FUL-02, COP-02, SP-03, DAT-03.
 - Likely files: docs/deployment.md; README.md.
@@ -22,4 +22,4 @@ Write a short flow for many/one/zero results, expansion, combined filters/clear,
 - Acceptance: Workbench injection is presented as a fallback, not successful natural discovery. Record actual manual outcomes and remaining host/tenant blockers in the canonical checklist.
 - Verification: Rehearse with the available mock/live environment. A final browser/tenant checklist stays open if access is unavailable.
 - Dependencies: DEM-01.
-- Likely files: docs/demo-runbook.md; Specs/tasks/todo.md.
+- Likely files: docs/demo-runbook.md; specs/tasks/todo.md.

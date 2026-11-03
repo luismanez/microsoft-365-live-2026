@@ -6,9 +6,9 @@ Commands run from `src/copilot-expert-finder`. File paths below are relative to 
 
 **Connect skill input to the inline view**
 
-Replace message with the minimal validated skill schema, instantiate the mock provider once, adapt existing props/root, and show count/first three experts/contact/expand.
+Replace message with the minimal validated skill schema, wire a stable provider once (mock during the initial UI increment; automatic root-list selection after SP-03), adapt existing props/root, and show count/first three experts/contact/expand.
 
-- Acceptance: Preserve root/context/targetDocument/teardown and existing IDs. Remove unrelated starter Graph/site calls. Invalid arguments make no data request.
+- Acceptance: Preserve root/context/targetDocument/teardown and existing IDs. Remove unrelated starter Graph/site calls. Invalid arguments make no expert-items query; the independent root-list availability check is an initialization step.
 - Verification: Run npm run build; fire {"skill":"SPFx"}, DB, Spanish, and an invalid argument in Workbench when available.
 - Dependencies: DAT-02, ACT-01.
 - Likely files: ExpertFinderCopilotComponentProperties.ts; ExpertFinderCopilotComponent.tsx; components/IExpertFinderProps.ts; components/ExpertFinder.tsx; components/ExpertFinderInline.tsx.
