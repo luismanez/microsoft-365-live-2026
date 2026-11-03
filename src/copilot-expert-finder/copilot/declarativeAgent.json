@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json",
   "version": "v1.8",
-  "name": "ExpertFinder Agent",
-  "description": "Find people who can help with SPFx, Copilot, databases or Spanish, and explore their profiles in an interactive directory.",
+  "name": "Expert Finder",
+  "description": "Find people who can help with a specific skill, and explore their profiles in an interactive directory.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {

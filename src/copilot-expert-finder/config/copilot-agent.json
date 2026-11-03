@@ -3,7 +3,7 @@
   "agents": [
     {
       "name": {
-        "default": "ExpertFinder Agent"
+        "default": "Expert Finder"
       },
       "description": {
         "default": "Find experts by skill and explore their profiles directly in Copilot."

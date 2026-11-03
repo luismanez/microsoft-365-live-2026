@@ -1,24 +1,25 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "copilot-expert-finder-client-side-solution",
+    "title": "Expert Finder",
+    "name": "copilot-expert-finder-component",
     "id": "aa4326b3-eeff-4ca7-8f74-f695935a8bbb",
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "developer": {
-      "name": "",
-      "websiteUrl": "",
-      "privacyUrl": "",
-      "termsOfUseUrl": "",
+      "name": "Luis Manez",
+      "websiteUrl": "https://github.com/luismanez",
+      "privacyUrl": "https://luismanez.com/",
+      "termsOfUseUrl": "https://luismanez.com/#about",
       "mpnId": "Undefined-1.24.0"
     },
     "metadata": {
       "shortDescription": {
-        "default": "copilot-expert-finder description"
+        "default": "Find the right people for the skills you need."
       },
       "longDescription": {
-        "default": "copilot-expert-finder description"
+        "default": "Find colleagues with expertise in a specific area. Explore their profiles, filter by name, department and role, and connect through Microsoft Teams."
       },
       "screenshotPaths": [],
       "videoUrl": "",

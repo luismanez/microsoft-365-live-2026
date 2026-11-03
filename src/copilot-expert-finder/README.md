@@ -27,11 +27,14 @@ The development server is HTTPS localhost:4321. Open your tenant's Copilot Workb
 
 The component automatically checks `Experts` in the tenant root site once during initialization. HTTP 200 selects SharePoint; HTTP 404 selects the fictional mock collection. Other errors are shown without switching to mocks. There is no manual data-source or site-URL setting. The same package works across tenants using this convention.
 
-The root URL comes from `new URL(this.context.pageContext.web.absoluteUrl).origin`, including when Workbench is opened in a subsite. The SharePoint provider filters Skill on the server using SPHttpClient with the current user's permissions. An existing list with zero matching items shows the empty state. Reload the component after creating the list to select the source again. No additional Graph permissions or secrets are needed.
+The root URL comes from `new URL(this.context.pageContext.web.absoluteUrl).origin`, including when Workbench is opened in a subsite. The SharePoint provider filters Skill on the server using SPHttpClient with the current user's permissions. An existing list with zero matching items shows the empty state. Reload the component after creating the list to select the source again.
+
+Live profile photos use delegated Microsoft Graph through SPFx's MSGraphClientV3: `GET /users/{UPN}/photo/$value`. Cards appear before the photos, with a circular shimmer until each image loads and initials when unavailable. Requests run in parallel and are cached per UPN for the component lifetime; filters and inline/fullscreen reuse them. Mock profiles still use bundled portraits and make no Graph requests. See the [CLI consent guide](docs/graph-permissions.md); the conference tenant reuses its existing `User.ReadBasic.All` grant. No package permission requests or new dependencies were added. Actual photo access and latency in Workbench/Copilot still need a live check.
 
 ## Session resources
 
 - [SharePoint list setup and sample data](docs/sharepoint-setup.md)
+- [Graph photo permissions with M365 CLI](docs/graph-permissions.md)
 - [Build, Workbench and installation](docs/deployment.md)
 - [Natural invocation checklist](docs/copilot-invocation.md)
 - [Conference script and discovery fallback](docs/demo-runbook.md)

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, makeStyles, tokens } from '@fluentui/react-components';
 import { ArrowExpand20Regular } from '@fluentui/react-icons';
-import type { Expert } from '../models/Expert';
+import type { Expert, ExpertPhotos } from '../models/Expert';
 import { ExpertAvatar } from './ExpertAvatar';
 import { ExpertActions } from './ExpertActions';
 
@@ -17,6 +17,8 @@ const useStyles = makeStyles({
 
 interface InlineProps {
   experts: Expert[];
+  photos: ExpertPhotos;
+  onPhotoSettled: (id: string, failed: boolean) => void;
   isDemo: boolean;
   canExpand: boolean;
   expanding: boolean;
@@ -29,7 +31,7 @@ export function ExpertFinderInline(props: InlineProps): React.ReactElement {
   return <>
     <ul className={styles.list} aria-label="Matching experts">
       {props.experts.slice(0, 3).map(expert => <li className={styles.row} key={expert.id}>
-        <ExpertAvatar expert={expert} />
+        <ExpertAvatar expert={expert} photo={props.photos[expert.id]} onPhotoSettled={props.onPhotoSettled} />
         <div className={styles.person}><div className={styles.name}>{expert.displayName}</div><div className={styles.role}>{expert.jobTitle}</div></div>
         <ExpertActions expert={expert} isDemo={props.isDemo} compact onOpenLink={props.onOpenLink} />
       </li>)}

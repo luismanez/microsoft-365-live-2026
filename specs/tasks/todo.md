@@ -1,6 +1,6 @@
 # Expert Finder demo checklist
 
-Local source and documentation implementation is complete; external acceptance remains pending. Checked tasks have local evidence below. Tasks needing real Workbench, tenant or dialog interaction remain unchecked until that acceptance is verified; their code can already be implemented. No automated test suites are being added.
+The baseline and Graph photo source/documentation are implemented locally. External acceptance remains pending. Checked tasks have local evidence below. Tasks needing real Workbench, tenant or dialog interaction remain unchecked until that acceptance is verified; their code can already be implemented. No automated test suites are being added.
 
 ## Skill scoped mock data
 
@@ -38,6 +38,12 @@ Local source and documentation implementation is complete; external acceptance r
 - [x] **DEM-01** — [Build and document installation](../demo-readiness/tasks.md#dem-01)
 - [ ] **DEM-02** — [Write and rehearse the demo](../demo-readiness/tasks.md#dem-02)
 
+## Graph profile photos — host acceptance pending
+
+- [x] **GP-01** — [Retrieve Graph photos with a small cached loader](plan.md#gp-01-retrieve-graph-photos)
+- [ ] **GP-02** — [Show progressive avatars in the existing UI](plan.md#gp-02-show-progressive-avatars) — source implemented; host acceptance pending
+- [ ] **GP-03** — [Build, check the demo and update current docs](plan.md#gp-03-build-and-check-the-demo) — build/docs complete; tenant checks pending
+
 ## Final practical checks
 
 - [x] Production build passes and the sppkg/agent ZIP include the required local assets.
@@ -70,3 +76,10 @@ Local source and documentation implementation is complete; external acceptance r
 ### Automatic root-list selection update (2026-11-03)
 
 The user approved the demo convention: Experts is in the tenant root. Selection runs once in onInit; root is derived from the context URL origin, including Workbench opened on another site. A present but empty list, zero matching items, or later item-read failure never activates mocks. Verification: npm run build exited 0 with no TypeScript/lint errors or warnings. The regenerated sppkg passed archive integrity inspection and includes the eight portraits and agent ZIP. Manual 200/404/403 availability checks and empty-list/host behavior remain unverified in the tenant. No tests, dependencies, browser automation or tenant writes are added.
+
+### Graph profile photo implementation (2026-11-03)
+
+- GP-01: added GraphPhotoService using the installed SPFx MSGraphClientV3 and Graph v1.0 `/users/{UPN}/photo/$value`. Source review confirms one lazy client, per-UPN pending/success/unavailable caching, a five-second logical timeout, no Blob URL creation from stale responses, and URL disposal at teardown. The SharePoint provider no longer builds `userphoto.aspx` URLs. No dependencies or package permission requests were added; the existing compatible consent is reused.
+- GP-02: the app renders SharePoint results independently and starts all photos for the small result set in parallel. Photo/image-loading state lives above inline/fullscreen, with circular 48/72 px Fluent Skeletons until image load and initials on failure. A separate five-second image-load limit prevents indefinite shimmer. Mock mode retains local portraits and creates no Graph loader. Compilation/lint passed; actual host visuals, mode/filter behavior and licensed/unlicensed user photos remain pending.
+- GP-03: `npm run build` exited 0 with no TypeScript or lint warnings/errors. The generated sppkg and current agent ZIP passed archive integrity inspection; the packaged production bundle includes the Graph photo endpoint and omits the previous SharePoint photo URL. README, setup, deployment and CLI permission docs now describe the implementation. Local Markdown links and `git diff --check` passed. No unit tests, browser automation, tenant changes or deployment were performed.
+- Manual acceptance still required in Workbench and Copilot: authenticated SPFx photo access, the unlicensed user's uploaded photo, unavailable-photo fallback, both themes, no repeat Graph loads across fullscreen/filters, and cold/warm first-three-photo timing. The 1–2 second target is unmeasured. Graph Explorer success alone does not verify the component's authorization. GP-02/GP-03 remain unchecked for those host checks.

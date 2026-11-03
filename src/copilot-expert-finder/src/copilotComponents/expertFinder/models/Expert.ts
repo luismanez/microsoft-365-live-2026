@@ -10,3 +10,10 @@ export interface Expert {
   readonly userPrincipalName?: string;
   readonly photoUrl?: string;
 }
+
+export interface ExpertPhoto {
+  readonly url?: string;
+  readonly loading: boolean;
+}
+
+export type ExpertPhotos = Readonly<Record<string, ExpertPhoto | undefined>>;

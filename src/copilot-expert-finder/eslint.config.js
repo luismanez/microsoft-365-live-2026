@@ -3,6 +3,9 @@ const spfxProfile = require('@microsoft/eslint-config-spfx/lib/flat-profiles/rea
 module.exports = [
   ...spfxProfile,
   {
+    ignores: ['sharepoint/solution/**']
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parserOptions: {

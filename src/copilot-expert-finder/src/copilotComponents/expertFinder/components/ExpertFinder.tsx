@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FluentProvider, IdPrefixProvider, teamsLightTheme, teamsDarkTheme, Spinner, Button, makeStyles, tokens } from '@fluentui/react-components';
 import { Search24Regular } from '@fluentui/react-icons';
-import type { Expert, ExpertSkill } from '../models/Expert';
+import type { Expert, ExpertPhoto, ExpertPhotos, ExpertSkill } from '../models/Expert';
 import type { IExpertFinderProps } from './IExpertFinderProps';
 import { ExpertFinderHeader } from './ExpertFinderHeader';
 import { ExpertFinderInline } from './ExpertFinderInline';
@@ -22,8 +22,9 @@ type Results = { skill?: ExpertSkill; status: 'loading' | 'ready' | 'error'; exp
 
 export default function ExpertFinder(props: IExpertFinderProps): React.ReactElement {
   const styles = useStyles();
-  const { skill, service } = props;
+  const { skill, service, photoService } = props;
   const [results, setResults] = React.useState<Results>({ status: 'loading', experts: [] });
+  const [photos, setPhotos] = React.useState<ExpertPhotos>({});
   const [retry, setRetry] = React.useState(0);
   const [filters, setFilters] = React.useState({ ...emptyFilters });
   const [expanding, setExpanding] = React.useState(false);
@@ -37,12 +38,35 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
     let active = true;
     setResults({ skill, status: 'loading', experts: [] });
     service.getExpertsBySkill(skill).then(experts => {
-      if (active) setResults({ skill, status: 'ready', experts });
+      if (!active) return;
+      const initialPhotos: Record<string, ExpertPhoto> = {};
+      experts.forEach(expert => {
+        initialPhotos[expert.id] = { url: expert.photoUrl, loading: !!photoService && !!expert.userPrincipalName && !expert.photoUrl };
+      });
+      setPhotos(initialPhotos);
+      setResults({ skill, status: 'ready', experts });
+      // Warm the full skill result set so expanding does not start another Graph load.
+      if (photoService) experts.forEach(expert => {
+        if (expert.photoUrl || !expert.userPrincipalName) return;
+        photoService.getPhotoUrl(expert.userPrincipalName).then(url => {
+          if (active) setPhotos(current => ({ ...current, [expert.id]: { url, loading: !!url } }));
+        }).catch(() => {
+          if (active) setPhotos(current => ({ ...current, [expert.id]: { loading: false } }));
+        });
+      });
     }).catch((error: unknown) => {
       if (active) setResults({ skill, status: 'error', experts: [], error: error instanceof Error ? error.message : 'Unable to retrieve experts. Please try again.' });
     });
     return () => { active = false; };
-  }, [skill, service, retry]);
+  }, [skill, service, photoService, retry]);
+
+  const settlePhoto = React.useCallback((id: string, failed: boolean): void => {
+    setPhotos(current => {
+      const photo = current[id];
+      if (!photo || (!photo.loading && !failed)) return current;
+      return { ...current, [id]: { url: failed ? undefined : photo.url, loading: false } };
+    });
+  }, []);
 
   const expand = async (): Promise<void> => {
     setExpanding(true); setHostError('');
@@ -64,9 +88,11 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
             : loading ? <div className={styles.state} role="status"><Spinner label={`Finding experts in ${skill}…`} /></div>
             : results.status === 'error' ? <div className={styles.state} role="alert"><p className={styles.message}>{results.error}</p><Button onClick={() => setRetry(value => value + 1)}>Try again</Button></div>
             : experts.length === 0 ? <div className={styles.state} role="status"><Search24Regular /><strong>No experts found in {skill}</strong><p className={styles.message}>Try another skill by asking Copilot a new question.</p></div>
-            : fullscreen ? <ExpertFinderFullscreen experts={experts} filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
+            : fullscreen ? <ExpertFinderFullscreen experts={experts} photos={photos} onPhotoSettled={settlePhoto}
+              filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
             : <><p className={styles.count} role="status">{experts.length} {experts.length === 1 ? 'expert' : 'experts'} found</p>
-              <ExpertFinderInline experts={experts} isDemo={props.isDemo} canExpand={canExpand} expanding={expanding}
+              <ExpertFinderInline experts={experts} photos={photos} onPhotoSettled={settlePhoto}
+                isDemo={props.isDemo} canExpand={canExpand} expanding={expanding}
                 onExpand={expand} onOpenLink={props.onOpenLink} /></>}
           {hostError && <div className={styles.error} role="alert">{hostError}</div>}
         </div>

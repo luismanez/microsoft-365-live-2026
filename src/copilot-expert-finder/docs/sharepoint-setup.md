@@ -42,7 +42,17 @@ The selection is made once per component instance, before the first React render
 
 When SharePoint is selected, a second authenticated delegated GET retrieves matching items with `$filter=Skill eq 'SPFx'` (canonical value), a minimal `$select`, `$expand=Expert`, and `$top=100`. The service never reads the directory or the whole list as a search strategy. An unexpected continuation is reported instead of displaying a misleading truncated count; keep this conference list small.
 
-The Person projection uses Id, Title and Name. Standard SharePoint Online membership claims (`i:0#.f|membership|UPN`) supply the UPN. EMail is intentionally not requested: email is unnecessary for this UI and is not proof of a Teams UPN. Unresolved/nonstandard claims render the profile with contact unavailable. Photos use the site's `/_layouts/15/userphoto.aspx?size=M&accountname=...` endpoint for resolved principals and fall back to initials on failure. Actual photo access inside Copilot depends on the host/authentication environment and needs a live check. No Graph consent or application permissions are requested.
+The Person projection uses Id, Title and Name. Standard SharePoint Online membership claims (`i:0#.f|membership|UPN`) supply the UPN. EMail is intentionally not requested: email is unnecessary for this UI and is not proof of a Teams UPN. Unresolved/nonstandard claims render the profile with contact unavailable and initials.
+
+## Profile photos
+
+Live photos come from Graph v1.0 `GET /users/{encodedUPN}/photo/$value` through the authenticated SPFx MSGraphClientV3, rather than SharePoint's `userphoto.aspx`. This uses the Graph photo already verified in Graph Explorer for the unlicensed demo user; photo access from the component must also be checked in the actual host.
+
+Cards render immediately after the list responds. Photos for the small skill result set load in parallel, including those beyond the first three inline rows. Each avatar reserves its existing size and shows a circular Fluent shimmer until its image loads. Missing identities, unavailable photos, denied requests and other photo failures show initials without failing the expert list or selecting mocks.
+
+The loader shares one lazily acquired client and caches pending, successful and unavailable photos per normalized UPN for the component lifetime. Filters and mode/theme changes reuse the results. Graph loading has a five-second logical timeout, followed by a separate five-second image-load limit when necessary; late Graph responses are ignored rather than cancelling transport. Blob URLs are released at teardown. Reload the component to retry a cached unavailable photo after uploading a picture or fixing consent. Mock data retains its bundled portraits and never calls Graph.
+
+Follow [Graph photo permissions with M365 CLI](graph-permissions.md) to reuse compatible delegated consent or grant `ProfilePhoto.Read.All` when missing. The conference tenant already has `User.ReadBasic.All`; its consent is reused. The package does not request additional permissions.
 
 ## Check with the tenant
 

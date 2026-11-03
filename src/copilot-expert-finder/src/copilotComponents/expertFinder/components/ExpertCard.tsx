@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Card, makeStyles, tokens } from '@fluentui/react-components';
 import { PeopleTeam20Regular } from '@fluentui/react-icons';
-import type { Expert } from '../models/Expert';
+import type { Expert, ExpertPhoto } from '../models/Expert';
 import { ExpertAvatar } from './ExpertAvatar';
 import { ExpertActions } from './ExpertActions';
 
@@ -17,13 +17,14 @@ const useStyles = makeStyles({
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`, color: tokens.colorNeutralForeground2, fontSize: '13px' }
 });
 
-export function ExpertCard({ expert, isDemo, onOpenLink }: {
-  expert: Expert; isDemo: boolean; onOpenLink: (url: string) => Promise<void>;
+export function ExpertCard({ expert, photo, onPhotoSettled, isDemo, onOpenLink }: {
+  expert: Expert; photo?: ExpertPhoto; onPhotoSettled: (id: string, failed: boolean) => void;
+  isDemo: boolean; onOpenLink: (url: string) => Promise<void>;
 }): React.ReactElement {
   const styles = useStyles();
   return <Card className={styles.card}>
     <div className={styles.person}>
-      <ExpertAvatar expert={expert} size={72} />
+      <ExpertAvatar expert={expert} photo={photo} onPhotoSettled={onPhotoSettled} size={72} />
       <div className={styles.details}><h2 className={styles.name}>{expert.displayName}</h2><p className={styles.role}>{expert.jobTitle}</p></div>
     </div>
     <p className={styles.summary}>{expert.shortCV || 'No professional summary provided.'}</p>

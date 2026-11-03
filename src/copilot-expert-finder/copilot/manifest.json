@@ -4,22 +4,22 @@
   "version": "1.0.0",
   "id": "9b076d6a-9c80-4c1d-ae8b-83dd4c3184f0",
   "developer": {
-    "name": "Contoso",
-    "websiteUrl": "https://www.contoso.com",
-    "privacyUrl": "https://www.contoso.com/privacy",
-    "termsOfUseUrl": "https://www.contoso.com/terms"
+    "name": "Luis Manez",
+    "websiteUrl": "https://github.com/luismanez/",
+    "privacyUrl": "https://luismanez.com",
+    "termsOfUseUrl": "https://luismanez.com/#about"
   },
   "icons": {
     "color": "color.png",
     "outline": "outline.png"
   },
   "name": {
-    "short": "ExpertFinder Agent",
-    "full": "ExpertFinder Agent"
+    "short": "Expert Finder",
+    "full": "Expert Finder — Find the right people"
   },
   "description": {
-    "short": "ExpertFinder description",
-    "full": "ExpertFinder description"
+    "short": "Find the right people for the skills you need",
+    "full": "Find colleagues with expertise in a specific area. Explore their profiles, filter by name, department and role, and connect through Microsoft Teams."
   },
   "accentColor": "#FFFFFF",
   "copilotAgents": {

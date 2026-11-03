@@ -17,7 +17,7 @@ Write concise instructions for Experts in the tenant root and a small seed file 
 
 **Implement filtered REST retrieval**
 
-Implement SharePointExpertService with canonical skill validation, safe OData/URL construction, minimal select/Person expansion, and simple mapping. Resolve identity/photos through supported SharePoint information.
+Implement SharePointExpertService with canonical skill validation, safe OData/URL construction, minimal select/Person expansion, and simple mapping. Resolve identity through supported SharePoint Person information; live photos use the [Graph photo loader](../tasks/plan.md#graph-profile-photos).
 
 - Acceptance: Every query is skill-filtered and delegated. Check HTTP/response failures, timeout and empty results; explain unexpected pagination rather than silently truncating totals. Never broaden the query or fall back to mock.
 - Verification: Run npm run build. With a configured tenant, inspect the request and returned users/photos; without it, record the live check as pending.

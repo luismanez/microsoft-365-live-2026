@@ -6,11 +6,13 @@ import type { IExpertFinderProps } from './components/IExpertFinderProps';
 import { propertiesSchema, type IExpertFinderCopilotComponentProperties } from './ExpertFinderCopilotComponentProperties';
 import type { IExpertService } from './services/IExpertService';
 import { createExpertService } from './services/createExpertService';
+import { GraphPhotoService } from './services/GraphPhotoService';
 import { normalizeSkill } from './utils/skills';
 
 export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<IExpertFinderCopilotComponentProperties> {
   private _root: Root | undefined;
   private _service: IExpertService | undefined;
+  private _photoService: GraphPhotoService | undefined;
   private _isDemo: boolean = false;
   private _configurationError: string | undefined;
 
@@ -19,6 +21,7 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
       const selection = await createExpertService(this.context.spHttpClient, this.context.pageContext.web.absoluteUrl);
       this._service = selection.service;
       this._isDemo = selection.isDemo;
+      if (!selection.isDemo) this._photoService = new GraphPhotoService(this.context.msGraphClientFactory);
     } catch (error) {
       this._configurationError = error instanceof Error ? error.message : 'The expert data source could not be selected.';
     }
@@ -41,6 +44,7 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
       skill,
       inputError: skill ? undefined : 'Ask Copilot to find an expert in SPFx, Copilot, DB or Spanish.',
       service: this._service,
+      photoService: this._photoService,
       isDemo: this._isDemo,
       configurationError: this._configurationError,
       hostContext: this.hostContext,
@@ -55,6 +59,8 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
   protected onTeardown(): Promise<void> {
     this._root?.unmount();
     this._root = undefined;
+    this._photoService?.dispose();
+    this._photoService = undefined;
     return Promise.resolve();
   }
 }

@@ -63,8 +63,7 @@ export class SharePointExpertService implements IExpertService {
       const userPrincipalName = getTeamsChatUrl(principal) ? principal : undefined;
       return {
         id: String(item.Id), displayName: item.Expert.Title, jobTitle: item.Title,
-        skill, shortCV: item.ShortCV || '', department: item.Department || '', userPrincipalName,
-        photoUrl: userPrincipalName ? `${this._siteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${encodeURIComponent(userPrincipalName)}` : undefined
+        skill, shortCV: item.ShortCV || '', department: item.Department || '', userPrincipalName
       };
     });
   }

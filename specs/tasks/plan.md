@@ -30,3 +30,33 @@ Portrait sourcing can proceed after mock identities exist. Pure filters and list
 ## Single-prompt execution
 
 [IMPLEMENTATION-PROMPT.md](../IMPLEMENTATION-PROMPT.md) authorizes the future local implementation once. The executor resumes unchecked tasks, records actual build/manual results, and continues across features. Local source/package work does not imply authority to provision the tenant, seed people data, upload/sync an agent, or publish. No unfinished task or external check is marked complete without evidence.
+
+## Graph profile photos
+
+Small follow-up: SharePoint still supplies experts and verified UPNs; only live photos move to Graph. The user confirmed Graph Explorer returns the photo for the unlicensed demo account; component access remains to be verified.
+
+Execute GP-01 → GP-02 → GP-03. Reuse the existing delegated `User.ReadBasic.All` consent and the [Graph permission guide](../../src/copilot-expert-finder/docs/graph-permissions.md). No new dependencies, unit tests, feature folder or package permission requests.
+
+### GP-01: Retrieve Graph photos
+
+Add one small loader using SPFx's `msGraphClientFactory.getClient('3')` and Graph v1.0 `GET /users/{encodedUPN}/photo/$value`. Lazily share one client, convert binary responses to Blob URLs, and cache pending/completed/unavailable results per normalized UPN for the component lifetime. Release Blob URLs on teardown and ignore late completions. Stop returning live `userphoto.aspx` URLs; retain local mock portraits.
+
+**Acceptance:** missing UPN, 404, access/network errors or a short timeout yield an unavailable photo without failing the expert list. A UPN is requested at most once per instance.
+
+**Files:** entry component, main props, SharePoint provider and one loader file. Verify the installed SDK's binary-response types. No dependency on another task.
+
+### GP-02: Show progressive avatars
+
+Connect the loader to the existing UI with minimal prop changes. Render cards as soon as SharePoint returns; start photos in parallel for the small returned set, including experts beyond the first three. Show a circular Fluent Skeleton at the existing 48/72 px size until each image loads; fall back to initials.
+
+**Acceptance:** no blocked cards, layout shift or endless shimmer. Loaded photos remain visible without repeat requests across inline/fullscreen and filters, in both themes. Photo errors do not activate mock data.
+
+**Files:** existing app root, avatar and necessary view/card props. Depends on GP-01.
+
+### GP-03: Build and check the demo
+
+Run `npm run build`. Manually check Workbench and Copilot with licensed/unlicensed demo users, missing-photo fallback, fullscreen and filters. Aim for the first three photos within about 1–2 seconds after cards appear; record actual cold/warm behavior. If latency consistently hurts the demo, retain the current demo version rather than expand the implementation.
+
+**Acceptance:** build passes, available manual results are recorded, unavailable checks stay pending, and README/setup/deployment/permission docs reflect the implemented photo source. Graph Explorer success alone does not verify component access. No deployment or tenant permission changes are needed. Depends on GP-01 and GP-02.
+
+**References:** [Graph photo endpoint and permissions](https://learn.microsoft.com/en-us/graph/api/profilephoto-get?view=graph-rest-1.0), [SPFx MSGraphClientV3](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/use-msgraph).
