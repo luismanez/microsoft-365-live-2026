@@ -16,9 +16,9 @@ const useStyles = makeStyles({
 type MeetingState = { status: 'editing' } | { status: 'creating' }
   | { status: 'success'; meeting: CreatedMeeting } | { status: 'error'; message: string };
 
-export function MeetingConfirmationDialog({ expert, slot, service, timeZone, onClose, onAvailabilityChanged, onOpenLink }: {
+export function MeetingConfirmationDialog({ expert, slot, service, timeZone, onClose, onMeetingCreated, onAvailabilityChanged, onOpenLink }: {
   expert: Expert; slot: AvailabilitySlot; service: GraphMeetingService; timeZone: string;
-  onClose: () => void; onAvailabilityChanged: () => void; onOpenLink: (url: string) => Promise<void>;
+  onClose: () => void; onMeetingCreated: () => void; onAvailabilityChanged: () => void; onOpenLink: (url: string) => Promise<void>;
 }): React.ReactElement {
   const styles = useStyles();
   const [notes, setNotes] = React.useState('');
@@ -38,7 +38,7 @@ export function MeetingConfirmationDialog({ expert, slot, service, timeZone, onC
     busy.current = true; setState({ status: 'creating' }); setLinkError('');
     return service.createMeeting(expert, slot, notes).then(meeting => {
       busy.current = false;
-      if (active.current) { setState({ status: 'success', meeting }); onAvailabilityChanged(); }
+      if (active.current) { setState({ status: 'success', meeting }); onMeetingCreated(); }
     }).catch((error: unknown) => {
       busy.current = false;
       if (active.current) {

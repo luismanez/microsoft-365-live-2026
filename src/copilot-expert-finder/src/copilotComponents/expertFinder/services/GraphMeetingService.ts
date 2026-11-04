@@ -29,6 +29,7 @@ export class GraphMeetingService {
   private _client: Promise<MSGraphClientV3> | undefined;
   private _teamsReady: Promise<void> | undefined;
   private readonly _requests = new Map<string, Promise<CreatedMeeting>>();
+  private readonly _bookedSlots = new Set<string>();
   private _disposed = false;
   public readonly organizer: MeetingOrganizer;
 
@@ -48,6 +49,7 @@ export class GraphMeetingService {
 
   private _key(expert: Expert, slot: AvailabilitySlot): string { return `${normalize(expert.email)}|${slot.start.toISOString()}|${slot.end.toISOString()}`; }
   public hasMeetingRequest(expert: Expert, slot: AvailabilitySlot): boolean { return this._requests.has(this._key(expert, slot)); }
+  public isSlotBooked(expert: Expert, slot: AvailabilitySlot): boolean { return this._bookedSlots.has(this._key(expert, slot)); }
 
   public async createMeeting(expert: Expert, slot: AvailabilitySlot, notes: string): Promise<CreatedMeeting> {
     if (!this.canSchedule(expert)) throw new Error('Meeting creation is unavailable for this expert or account.');
@@ -59,7 +61,11 @@ export class GraphMeetingService {
     const existing = this._requests.get(key);
     if (existing) return existing;
     let writeStarted = false;
-    const request = this._create(expert, slot, notes.trim(), () => { writeStarted = true; }).catch((error: unknown) => {
+    const request = this._create(expert, slot, notes.trim(), () => { writeStarted = true; }).then(meeting => {
+      // Keep confirmed bookings visible while the attendee's free/busy view catches up.
+      if (!this._disposed) this._bookedSlots.add(key);
+      return meeting;
+    }).catch((error: unknown) => {
       const status = error && typeof error === 'object' && 'statusCode' in error ? error.statusCode : undefined;
       if (!writeStarted) { this._requests.delete(key); throw error; }
       if (status === 401 || status === 403) {
@@ -131,5 +137,5 @@ export class GraphMeetingService {
       teamsJoinUrl: event.isOnlineMeeting && event.onlineMeetingProvider === 'teamsForBusiness' ? httpsUrl(event.onlineMeeting?.joinUrl) : undefined };
   }
 
-  public dispose(): void { this._disposed = true; this._requests.clear(); }
+  public dispose(): void { this._disposed = true; this._requests.clear(); this._bookedSlots.clear(); }
 }

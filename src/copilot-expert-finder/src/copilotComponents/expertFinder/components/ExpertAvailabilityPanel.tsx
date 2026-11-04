@@ -136,12 +136,14 @@ export function ExpertAvailabilityPanel({ id, expert, service, meetingService, i
         <ol id={`${id}-slots`} className={mergeClasses(styles.timeline, periodIndex === 0 ? styles.morning : styles.afternoon)}
           aria-label={`${period.label} calendar availability, ${period.range}, 30-minute slots`}>
           {availability.slots.slice(period.start, period.end).map(slot => {
-            const status = statusLabels[slot.status];
+            const booked = !!meetingService?.isSlotBooked(expert, slot);
+            const displayedStatus = booked ? 'busy' : slot.status;
+            const status = statusLabels[displayedStatus];
             const current = slot.start.getTime() <= now.getTime() && now.getTime() < slot.end.getTime();
             const requested = !!meetingService?.hasMeetingRequest(expert, slot);
-            const actionable = canBook && slot.status === 'free' && slot.start.getTime() > now.getTime() && !requested;
-            const label = `${timeFormat.format(slot.start)}–${timeFormat.format(slot.end)}: ${status.label}${current ? '. Current time slot' : ''}${requested ? '. A meeting was already requested; check your calendar' : ''}`;
-            const slotStyle = mergeClasses(styles.slot, styles[slot.status], current && styles.current);
+            const actionable = canBook && displayedStatus === 'free' && slot.start.getTime() > now.getTime() && !requested;
+            const label = `${timeFormat.format(slot.start)}–${timeFormat.format(slot.end)}: ${status.label}${current ? '. Current time slot' : ''}${booked ? '. Meeting created in this session' : requested ? '. A meeting was already requested; check your calendar' : ''}`;
+            const slotStyle = mergeClasses(styles.slot, styles[displayedStatus], current && styles.current);
             const content = <><time className={styles.slotTime} dateTime={slot.start.toISOString()} aria-hidden="true">{timeFormat.format(slot.start)}</time>
               <span aria-hidden="true">{status.marker}</span></>;
             return <li key={slot.start.getTime()} className={styles.slotItem}>
@@ -163,10 +165,14 @@ export function ExpertAvailabilityPanel({ id, expert, service, meetingService, i
           </span>)}
         </div>
         <p className={styles.hint}>Calendar availability · 30-minute slots</p>
+        {availability.slots.some(slot => meetingService?.isSlotBooked(expert, slot)) && <p className={styles.hint} role="status">
+          Meetings created here stay marked Busy for this session. The expert can still accept or decline.
+        </p>}
         {canBook && <p className={styles.hint}>Select a future Free slot to create a Teams meeting.</p>}
         {meetingService?.isSelf(expert) && <p className={styles.hint}>Your own calendar is shown for reference.</p>}
       </>}
     {meetingSlot && meetingService && <MeetingConfirmationDialog expert={expert} slot={meetingSlot} service={meetingService}
-      timeZone={zone} onClose={closeMeeting} onAvailabilityChanged={refreshAvailability} onOpenLink={onOpenLink} />}
+      timeZone={zone} onClose={closeMeeting} onMeetingCreated={() => setNow(new Date())}
+      onAvailabilityChanged={refreshAvailability} onOpenLink={onOpenLink} />}
   </section>;
 }
