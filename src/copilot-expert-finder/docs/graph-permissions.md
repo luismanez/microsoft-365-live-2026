@@ -1,6 +1,6 @@
 # Graph photo and calendar permissions with M365 CLI
 
-The component loads live profile photos and selected-expert calendar free/busy from Graph v1.0 through SPFx's MSGraphClientV3. This guide covers their separate delegated permissions. SharePoint supplies expert records, UPNs and SMTP email; mock portraits remain local and mock profiles make no calendar requests.
+The component loads live profile photos, selected-expert calendar free/busy and explicitly confirmed Teams meetings through Graph v1.0 using SPFx's MSGraphClientV3. This guide covers their separate delegated permissions. SharePoint supplies expert records, UPNs and SMTP email; mock portraits remain local and mock profiles make no calendar requests.
 
 Assume M365 CLI is already configured, authenticated and authorized to inspect service principals and manage delegated consent in the target tenant. CLI installation, application configuration and sign-in are outside this guide.
 
@@ -18,6 +18,12 @@ For `POST /me/calendar/getSchedule`, the current [endpoint permission table](htt
 
 If no compatible calendar permission exists, an authorized administrator can grant `Calendars.ReadBasic` using the same scope-preserving CLI procedure below. The component performs no consent operation and adds no `webApiPermissionRequests`. Consent alone does not provision a mailbox or override Exchange sharing policies.
 
+### Teams meeting creation permission
+
+`POST /me/events` requires delegated `Calendars.ReadWrite`. `Calendars.Read` and `Calendars.ReadBasic` only cover the read feature. The [calendar create-event API](https://learn.microsoft.com/en-us/graph/api/user-post-events?view=graph-rest-1.0#permissions) supports Teams meetings through `isOnlineMeeting: true` and `onlineMeetingProvider: teamsForBusiness`; this calendar-backed path does not require a separate OnlineMeetings.ReadWrite grant. Events with attendees send real invitations.
+
+On 2026-11-04 the user reported granting the calendar permission for this feature. No consent change or live meeting creation was performed by the implementation session. Reuse that grant; inspect it with step 2 if needed. Existing compatible read scopes do not need to be removed. Calendar Teams-provider support, mailbox access and actual event/link creation remain host checks.
+
 Choose the missing permission for the operation being enabled before step 3. For photos:
 
 ```bash
@@ -28,6 +34,12 @@ For calendar availability instead, use:
 
 ```bash
 requiredScope="Calendars.ReadBasic"
+```
+
+For confirmed Teams meeting creation, only when Calendars.ReadWrite is absent:
+
+```bash
+requiredScope="Calendars.ReadWrite"
 ```
 
 Only use a branch when its compatible permission is absent. Keep all unrelated scopes, including the existing photo grant.
@@ -74,7 +86,7 @@ m365 entra oauth2grant list \
   --output json
 ```
 
-For photos, `ProfilePhoto.Read.All` or a compatible scope such as `User.ReadBasic.All` is sufficient; this was the conference tenant's outcome. For availability, look separately for `Calendars.ReadBasic`, `Calendars.Read` or `Calendars.ReadWrite`. If a compatible permission for the selected operation is present, no change is needed. The earlier calendar scope must be rechecked rather than assumed from photo success.
+For photos, `ProfilePhoto.Read.All` or a compatible scope such as `User.ReadBasic.All` is sufficient; this was the conference tenant's outcome. For availability, look separately for `Calendars.ReadBasic`, `Calendars.Read` or `Calendars.ReadWrite`. Creating meetings specifically requires `Calendars.ReadWrite`. If the required permission for the selected operation is present, no change is needed. Do not infer calendar write access from successful photos or free/busy reads.
 
 If a grant is returned without a compatible permission, follow the existing-grant branch below. If the result is `[]`, follow the new-grant branch.
 
@@ -117,3 +129,5 @@ This verifies consent configuration. Validate the authenticated photo request fr
 Implementation reference: [Use MSGraphClientV3 in SPFx](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/use-msgraph). Actual component authorization and cold/warm photo latency still require a host check; a successful local build does not verify them.
 
 For availability, select Check availability on a real expert's fullscreen card. Confirm that one selected SMTP address is sent to `/me/calendar/getSchedule`, the local 09:00–18:00 range is converted to UTC, and only free/busy states appear. The caller's calendar access, expert mailbox/sharing, HTTP/per-schedule failures and A→B selection behavior require live validation. An unlicensed user whose Graph photo works may still lack an accessible Exchange mailbox; that is an unavailable calendar state. Follow the [live demo segment](demo-runbook.md#live-calendar-availability-segment). No calendar consent command or live calendar request was executed during local implementation.
+
+For meeting creation, choose a future Free slot belonging to another controlled demo expert and inspect the confirmation before creating it. This action sends a real invitation. Check Teams support, both-calendar revalidation, the returned onlineMeeting.joinUrl, duplicate-click blocking and uncertain-response messaging. No real meeting or permission change was executed as a build check. Cancel any rehearsal meeting manually in Outlook when finished if appropriate; the component has no cancel-event or delete-event operation.

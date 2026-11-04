@@ -90,6 +90,7 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
             : experts.length === 0 ? <div className={styles.state} role="status"><Search24Regular /><strong>No experts found in {skill}</strong><p className={styles.message}>Try another skill by asking Copilot a new question.</p></div>
             : fullscreen ? <ExpertFinderFullscreen key={skill} experts={experts} photos={photos} onPhotoSettled={settlePhoto}
               availabilityService={props.availabilityService}
+              meetingService={props.meetingService}
               filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
             : <><p className={styles.count} role="status">{experts.length} {experts.length === 1 ? 'expert' : 'experts'} found</p>
               <ExpertFinderInline experts={experts} photos={photos} onPhotoSettled={settlePhoto}

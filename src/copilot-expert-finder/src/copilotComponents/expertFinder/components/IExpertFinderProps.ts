@@ -3,6 +3,7 @@ import type { ExpertSkill } from '../models/Expert';
 import type { IExpertService } from '../services/IExpertService';
 import type { GraphPhotoService } from '../services/GraphPhotoService';
 import type { GraphAvailabilityService } from '../services/GraphAvailabilityService';
+import type { GraphMeetingService } from '../services/GraphMeetingService';
 
 export interface IExpertFinderProps {
   skill?: ExpertSkill;
@@ -11,6 +12,7 @@ export interface IExpertFinderProps {
   service?: IExpertService;
   photoService?: GraphPhotoService;
   availabilityService?: GraphAvailabilityService;
+  meetingService?: GraphMeetingService;
   isDemo: boolean;
   hostContext: ICopilotComponentHostContext;
   targetDocument: Document;

@@ -8,6 +8,7 @@ import type { IExpertService } from './services/IExpertService';
 import { createExpertService } from './services/createExpertService';
 import { GraphPhotoService } from './services/GraphPhotoService';
 import { GraphAvailabilityService } from './services/GraphAvailabilityService';
+import { GraphMeetingService } from './services/GraphMeetingService';
 import { normalizeSkill } from './utils/skills';
 
 export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<IExpertFinderCopilotComponentProperties> {
@@ -15,6 +16,7 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
   private _service: IExpertService | undefined;
   private _photoService: GraphPhotoService | undefined;
   private _availabilityService: GraphAvailabilityService | undefined;
+  private _meetingService: GraphMeetingService | undefined;
   private _isDemo: boolean = false;
   private _configurationError: string | undefined;
 
@@ -26,6 +28,10 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
       if (!selection.isDemo) {
         this._photoService = new GraphPhotoService(this.context.msGraphClientFactory);
         this._availabilityService = new GraphAvailabilityService(this.context.msGraphClientFactory);
+        const user = this.context.pageContext.user;
+        this._meetingService = new GraphMeetingService(this.context.msGraphClientFactory, {
+          displayName: user.displayName, email: user.email, userPrincipalName: user.loginName
+        });
       }
     } catch (error) {
       this._configurationError = error instanceof Error ? error.message : 'The expert data source could not be selected.';
@@ -51,6 +57,7 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
       service: this._service,
       photoService: this._photoService,
       availabilityService: this._availabilityService,
+      meetingService: this._meetingService,
       isDemo: this._isDemo,
       configurationError: this._configurationError,
       hostContext: this.hostContext,
@@ -69,6 +76,8 @@ export default class ExpertFinderCopilotComponent extends BaseCopilotComponent<I
     this._photoService = undefined;
     this._availabilityService?.dispose();
     this._availabilityService = undefined;
+    this._meetingService?.dispose();
+    this._meetingService = undefined;
     return Promise.resolve();
   }
 }

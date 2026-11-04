@@ -3,6 +3,7 @@ import { Button, Card, makeStyles, tokens, useId } from '@fluentui/react-compone
 import { CalendarClock20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
 import type { Expert, ExpertPhoto } from '../models/Expert';
 import type { GraphAvailabilityService } from '../services/GraphAvailabilityService';
+import type { GraphMeetingService } from '../services/GraphMeetingService';
 import { ExpertAvatar } from './ExpertAvatar';
 import { ExpertActions } from './ExpertActions';
 import { ExpertAvailabilityPanel } from './ExpertAvailabilityPanel';
@@ -19,9 +20,10 @@ const useStyles = makeStyles({
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`, color: tokens.colorNeutralForeground2, fontSize: '13px' }
 });
 
-export function ExpertCard({ expert, photo, onPhotoSettled, availabilityService, availabilitySelected, onCheckAvailability, isDemo, onOpenLink }: {
+export function ExpertCard({ expert, photo, onPhotoSettled, availabilityService, meetingService, availabilitySelected, onCheckAvailability, isDemo, onOpenLink }: {
   expert: Expert; photo?: ExpertPhoto; onPhotoSettled: (id: string, failed: boolean) => void;
   availabilityService?: GraphAvailabilityService; availabilitySelected: boolean; onCheckAvailability: () => void;
+  meetingService?: GraphMeetingService;
   isDemo: boolean; onOpenLink: (url: string) => Promise<void>;
 }): React.ReactElement {
   const styles = useStyles();
@@ -37,6 +39,7 @@ export function ExpertCard({ expert, photo, onPhotoSettled, availabilityService,
     <Button appearance="subtle" icon={<CalendarClock20Regular />} onClick={onCheckAvailability}
       aria-label={`Check availability for ${expert.displayName}`} aria-expanded={availabilitySelected}
       aria-controls={availabilitySelected ? availabilityId : undefined}>Check availability</Button>
-    {availabilitySelected && <ExpertAvailabilityPanel id={availabilityId} expert={expert} service={availabilityService} isDemo={isDemo} />}
+    {availabilitySelected && <ExpertAvailabilityPanel id={availabilityId} expert={expert} service={availabilityService}
+      meetingService={meetingService} isDemo={isDemo} onOpenLink={onOpenLink} />}
   </Card>;
 }

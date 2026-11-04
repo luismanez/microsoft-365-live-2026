@@ -51,6 +51,11 @@ The baseline and Graph photo source/documentation are implemented locally. Exper
 - [ ] **AV-03** — [Connect selection in fullscreen cards](../expert-availability/tasks.md#av-03) — source/build complete; host lifecycle checks pending
 - [ ] **AV-04** — [Prepare and validate the conference demonstration](../expert-availability/tasks.md#av-04) — build/docs complete; tenant rehearsal pending
 
+## Confirmed Teams meetings — host acceptance pending
+
+- [x] Implement and build the [confirmed Teams meeting flow](../expert-availability/spec.md#confirmed-teams-meetings), its guarded Graph service, UI and permission/demo notes.
+- [ ] Verify real invitation delivery, Teams link, self/past/no-write cancellation, both-calendar conflicts, duplicate/uncertain outcomes and modal focus with controlled non-family accounts in Workbench/Copilot.
+
 ## Final practical checks
 
 - [x] Production build passes and the sppkg/agent ZIP include the required local assets.
@@ -106,3 +111,11 @@ The user approved the demo convention: Experts is in the tenant root. Selection 
 - Updated only ExpertAvailabilityPanel UI/state: 56 px high time-labeled blocks with 18 px status markers; Morning 09:00–14:00 (10 slots) and Afternoon 14:00–18:00 (8 slots); accessible local previous/next buttons disabled at the ends. Initial selection follows the local hour; Refresh and minute clock updates preserve it. The Graph service and its full-day request are unchanged.
 - CSS container queries use the panel's own width: one row from 600 px, otherwise two rows of five morning slots or four afternoon slots. Colors, legend, tooltips, current-slot outline and mock/unavailable behavior are retained. README, the demo segment and the existing AV-02/spec text describe the new layout; no new task structure or dependencies were introduced.
 - `npm run build` exited 0 without TypeScript/lint warnings/errors and regenerated the sppkg. No new tests or tenant operations were added. Actual arrow/Refresh request-count checks, initial selection around 14:00, keyboard announcements/focus and narrow/wide light/dark host layout remain pending; no browser automation or live host verification was performed for this update.
+
+### Confirmed Teams meeting creation (2026-11-04)
+
+- Added GraphMeetingService, MeetingConfirmationDialog and small typed organizer/result models. Future Free slots become native Fluent buttons only for another expert with resolved SMTP; self checks normalize the SPFx user's email/loginName and expert mail/UPN. Non-bookable cells remain informational and retain their time/status labels. Mock mode constructs no meeting service.
+- Confirmation displays parties/date/local time/duration and optional plain-text Notes (1,000 characters). Cancel before confirmation makes no write; pending actions/dismissal are locked. The service checks Teams provider support and both participants' free/busy for the selected half hour before POST /me/events with Teams settings, one expert attendee, UTC times and transactionId.
+- Per-instance in-flight/completed/uncertain attempts are guarded by expert/interval. Unknown POST outcomes stay blocked and ask the user to inspect Outlook; a delayed/missing join URL triggers one read of the existing event, never another creation. Calendar results refresh after an attempt without treating the expert as Busy without evidence. Guard state is not persisted across reloads.
+- Final npm run build exited 0 without TypeScript/lint warnings/errors. Both archives passed CRC checks; the production bundle includes the create-event path, transactionId, confirmation/Teams links and existing photo/availability endpoints. Dependency manifests, package permission configuration, GraphPhotoService, GraphAvailabilityService and existing ExpertActions are unchanged. Documentation links and ten shell examples passed static checks; no consent example was executed. Initial supported-style/Promise-lib/ref-lint issues were fixed without disabling checks or changing compiler configuration; a transient Heft staging collision did not recur in the final build.
+- README, SharePoint setup, CLI permissions and conference runbook now distinguish real confirmed invitations from the existing Schedule preview. The user reports Calendars.ReadWrite granted; no tenant grant was inspected or modified, no real meeting was created, and no browser automation or unit tests were added/run. Manual runtime and end-to-end invitation/link checks remain pending.

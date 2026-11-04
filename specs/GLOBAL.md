@@ -90,7 +90,7 @@ Use real accessible labels, useful names for icon buttons, visible focus, readab
 
 ## Contact actions
 
-Live Chat in Teams opens the supported HTTPS chat deep link with a verified, encoded UPN via the host bridge; it sends no message. Fictional mock contacts open a clearly labeled preview instead of launching a chat for an invented account. Schedule opens a clearly labeled demo dialog saying no meeting has been created. Calendar writes, meeting creation and presence remain outside scope. The separate Availability Panel permits only an on-demand free/busy read for one selected expert.
+Live Chat in Teams opens the supported HTTPS chat deep link with a verified, encoded UPN via the host bridge; it sends no message. Fictional mock contacts open a clearly labeled preview instead of launching a chat for an invented account. Schedule opens a clearly labeled demo dialog saying no meeting has been created. The Availability Panel supports free/busy reads and, following the user-approved extension, explicitly confirmed Teams meeting invitations from future Free slots for another expert. Schedule remains a preview. Presence and autonomous calendar/message writes remain outside scope.
 
 ## Availability panel
 
@@ -98,7 +98,13 @@ The [Expert Availability Panel](expert-availability/spec.md) is implemented loca
 
 The panel has local loading, accessible text markers/tooltips, both-theme semantic colors, a current-slot clock and explicit Refresh/retry. Only its active result is retained; selecting another expert, filtering it out, changing skill or leaving fullscreen clears the panel and ignores stale responses. There is no calendar prefetch or persistent cache. Missing email and mock mode make no calendar request. Search, photo caching and contact/Schedule behavior remain independent.
 
-Calendar reads supersede the previous blanket exclusion of availability; Schedule remains a demo preview. Keep the no-unit-tests quality bar and CLI consent workflow. Recheck the previously observed Calendars.Read grant before considering Calendars.ReadBasic. No webApiPermissionRequests, tenant changes or additional dependencies were added. A working Graph photo does not prove mailbox access. Status and observed results remain in tasks/todo.md.
+Calendar reads and explicitly confirmed Teams meeting invitations supersede the earlier read-only availability limit; Schedule remains a demo preview. Keep the no-unit-tests quality bar and CLI consent workflow. The user reports Calendars.ReadWrite granted on 2026-11-04. No webApiPermissionRequests, consent changes or additional dependencies were added by implementation. A working Graph photo does not prove mailbox or Teams meeting access. Status and observed results remain in tasks/todo.md.
+
+## Confirmed Teams meetings
+
+The [availability feature's booking flow](expert-availability/spec.md#confirmed-teams-meetings) permits one real 30-minute Teams invitation only after an explicit Create Teams meeting confirmation. Future Free slots for another expert are buttons; self detection uses normalized SPFx user email/login and expert SMTP/UPN. Missing identity, mock mode, past/current slots and previously requested slots remain informational.
+
+GraphMeetingService uses the existing SPFx Graph factory, verifies Teams support and both calendars, then creates `/me/events` with the caller as organizer, the expert as attendee, plain-text notes, UTC times, Teams online settings and transactionId. No new auth flow, backend or dependencies. A per-instance attempt guard prevents duplicate/in-flight/uncertain repeats; it is not a persistent cross-instance booking system. Success shows the Teams link and refreshes actual availability without claiming attendee acceptance. Unknown creation outcomes require checking Outlook; a link read failure never triggers a second event creation. Opening the dialog and Cancel before confirmation do not create an event. No live meeting was created during implementation checks.
 
 ## Minimal code organization
 
@@ -119,7 +125,7 @@ Do not change project watchers to fix an agent-sandbox-only fs.watch/EMFILE rest
 
 ## Authority and completion
 
-A future single implementation prompt may cover all local features without approval between each one. New dependencies or broader permissions need a concrete reason and approval. Tenant provisioning/seeding, package upload/sync, and publishing need the corresponding authorization. No secrets, raw HTML insertion, real messages/meetings, fake presence, or changes to Hello Copilot.
+A future single implementation prompt may cover all local features without approval between each one. New dependencies or broader permissions need a concrete reason and approval. Tenant provisioning/seeding, package upload/sync, and publishing need the corresponding authorization. No secrets, raw HTML insertion, autonomous messages/meetings, fake presence, or changes to Hello Copilot. The user-authorized Teams booking flow may send a real invitation only after its explicit in-app confirmation; agent/build validation does not create meetings or change the tenant.
 
 External prerequisites: browser/tenant access, root-site access for the availability check, a correctly provisioned root Experts list and real test-user mappings when showing live data, and a deployed/synced agent. A root-list HTTP 404 intentionally selects fictional demo data. Finish independent local work if one is unavailable; leave the corresponding manual checklist open and report the exact missing input. Do not manufacture publisher metadata, contact identities, screenshots, or successful host results.
 

@@ -3,6 +3,7 @@ import { Button, makeStyles, tokens } from '@fluentui/react-components';
 import { Search24Regular } from '@fluentui/react-icons';
 import type { Expert, ExpertPhotos } from '../models/Expert';
 import type { GraphAvailabilityService } from '../services/GraphAvailabilityService';
+import type { GraphMeetingService } from '../services/GraphMeetingService';
 import { filterExperts, emptyFilters, type ExpertFilters } from '../utils/expertFilters';
 import { ExpertSearch } from './ExpertSearch';
 import { ExpertCard } from './ExpertCard';
@@ -16,9 +17,10 @@ const useStyles = makeStyles({
   hint: { margin: 0, color: tokens.colorNeutralForeground2 }
 });
 
-export function ExpertFinderFullscreen({ experts, photos, onPhotoSettled, availabilityService, filters, onFiltersChange, isDemo, onOpenLink }: {
+export function ExpertFinderFullscreen({ experts, photos, onPhotoSettled, availabilityService, meetingService, filters, onFiltersChange, isDemo, onOpenLink }: {
   experts: Expert[]; photos: ExpertPhotos; onPhotoSettled: (id: string, failed: boolean) => void;
   availabilityService?: GraphAvailabilityService;
+  meetingService?: GraphMeetingService;
   filters: ExpertFilters; onFiltersChange: (filters: ExpertFilters) => void;
   isDemo: boolean; onOpenLink: (url: string) => Promise<void>;
 }): React.ReactElement {
@@ -35,7 +37,7 @@ export function ExpertFinderFullscreen({ experts, photos, onPhotoSettled, availa
       : `${visible.length} of ${experts.length} experts`}</p>
     {visible.length ? <div className={styles.grid}>{visible.map(expert =>
       <ExpertCard key={expert.id} expert={expert} photo={photos[expert.id]} onPhotoSettled={onPhotoSettled}
-        availabilityService={availabilityService} availabilitySelected={selectedExpertId === expert.id}
+        availabilityService={availabilityService} meetingService={meetingService} availabilitySelected={selectedExpertId === expert.id}
         onCheckAvailability={() => setSelectedExpertId(expert.id)}
         isDemo={isDemo} onOpenLink={onOpenLink} />)}</div>
       : <div className={styles.empty} role="status"><Search24Regular /><strong>No experts match these filters</strong>

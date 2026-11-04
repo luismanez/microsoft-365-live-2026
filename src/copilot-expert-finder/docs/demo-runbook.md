@@ -22,12 +22,23 @@ This segment needs SharePoint mode and a non-family demo expert with a valid Per
 2. Explain **Today · 09:00–18:00**, the viewing time zone and the legend. Use the arrows between Morning (09:00–14:00) and Afternoon (14:00–18:00). Larger blocks show their start time and status; narrow cards use two rows. These arrows reuse the loaded day without calling Graph. The initial period follows the local hour, and Refresh preserves the selection. This is calendar free/busy; it does not indicate Teams presence.
 3. Choose **Refresh** for a new read. Switching to another expert replaces the panel and ignores the previous response if it arrives late. Filters and ordinary host re-renders do not poll calendars.
 4. Optionally select a controlled mailbox-free user to show the honest unavailable state. In mock mode the panel explains that fictional profiles have no calendar; it does not invent a timeline.
-5. Keep **Schedule** as the existing preview. No invitation, booking or calendar write takes place.
+5. Keep **Schedule** as the existing preview. To demonstrate actual booking, use the separate flow below; merely opening availability or the Schedule preview sends no invitation.
 
 Manual rehearsal: check light/dark and narrow cards, keyboard slot tooltips, current-slot boundaries, duplicate clicks and A→B while pending. Compare local/UTC payload alignment for winter, summer and the Europe/Madrid transition dates 2026-03-29 / 2026-10-25 using browser time-zone inspection rather than adding date navigation. Record actual results and leave unavailable permission/mailbox/error scenarios pending. If live availability is unavailable on stage, retain the rest of Expert Finder and explain the calendar state instead of showing simulated free time.
 
+## Confirmed Teams meeting segment
+
+Use a non-family demo expert and a future Free slot today. Past/current slots, the signed-in user's own calendar and mock profiles cannot create meetings. After 18:00 there are no future slots in the current day's 09:00–18:00 window. The user reports Calendars.ReadWrite already granted; the implementation session did not reconfigure consent or send test invitations.
+
+1. Select a future Free slot. Show the confirmation's expert, organizer, date, local time, 30-minute duration and optional Notes. Choose **Cancel** once to demonstrate that this makes no calendar write.
+2. Reopen a future slot, optionally enter a short note, then explicitly choose **Create Teams meeting**. This sends a real invitation after verifying Teams support and rechecking both calendars. The dialog remains locked while processing.
+3. Show the confirmation and use **Open in Teams**. The expert can still accept or decline the invitation; free/busy revalidation is not a slot reservation. Availability refreshes using actual calendar data rather than marking the expert Busy without evidence.
+4. If the event exists but its Teams link could not be read, open it in Outlook; the app does not create another meeting to recover the link. If creation is uncertain, check Outlook before doing anything else. The per-instance guard blocks a repeat for that expert/interval; reloading is not a safe substitute for checking the calendar.
+
+Manual acceptance still required: self detection, future-slot boundaries, Cancel/no-write behavior, plain-text notes, actual invitation/link, either participant becoming Busy before confirmation, no Teams provider, denied access, double clicks and uncertain responses. Use only controlled demo accounts and cancel the rehearsal event manually in Outlook afterward when appropriate. No real meeting was created as an automated build or implementation check.
+
 ## Before going on stage
 
-Check the actual tenant/agent, whether the root Experts list is present and accessible, the resulting data-source label, network/profile images, allowed list access if live, Teams navigation for a tenant user if live, host modes/themes, and the fallback. For the calendar segment, verify an accessible mailbox, consent and the returned free/busy snapshot; it is not a guarantee that an expert can accept a meeting. No messages or invitations are sent by the app. Keep Hello Copilot separate; this workspace is only the prepared Expert Finder demo.
+Check the actual tenant/agent, whether the root Experts list is present and accessible, the resulting data-source label, network/profile images, allowed list access if live, Teams navigation for a tenant user if live, host modes/themes, and the fallback. For calendar reads, verify an accessible mailbox, consent and the returned free/busy snapshot; it is not a guarantee that an expert can accept a meeting. The separate confirmed booking flow sends a real meeting invitation; use only the prepared non-family demo accounts. Keep Hello Copilot separate; this workspace is only the prepared Expert Finder demo.
 
 A real Workbench/Copilot rehearsal is still required in your environment. No browser/tenant rehearsal was claimed by the implementation session.

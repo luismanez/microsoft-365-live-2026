@@ -1,6 +1,6 @@
 # Experts list setup
 
-The component selects its data source automatically by checking the list named Experts in the tenant root site. List creation and seeding are manual tenant-owner steps; this application only reads data.
+The component selects its data source automatically by checking the list named Experts in the tenant root site. List creation and seeding are manual tenant-owner steps; SharePoint list data is only read. Separately, an explicit meeting confirmation can create a calendar event and send an invitation through Graph.
 
 ## Create the list
 
@@ -71,5 +71,13 @@ In your controlled tenant, check source selection with the root list absent (404
 The provider and automatic selection are implemented locally. Actual tenant availability responses, projection/photo behavior and permissions still need validation in your environment.
 
 Calendar host checks are also pending: verify Person SMTP projection, a successful selected expert, unavailable mailbox/email, denied access, Refresh, rapid A→B selection, no calendar calls on inline/search, and the displayed range against Outlook. Use local browser time-zone inspection for winter/summer and DST boundaries. No tenant changes are performed by this implementation.
+
+## Confirm a Teams meeting
+
+A future Free slot can be booked with another expert after a confirmation dialog. Expert SMTP still comes from Person EMail. Organizer identity comes from the signed-in SPFx page context's email/login name; normalized email/UPN comparisons keep self slots informational. An unresolved organizer email also leaves booking unavailable. Mock profiles never expose real booking.
+
+After confirmation, Graph checks both the organizer and expert for the selected half hour and verifies that the organizer's calendar supports Teams. Only then does it create `/me/events` with the expert as an attendee, `isOnlineMeeting: true` and `onlineMeetingProvider: teamsForBusiness`. Optional Notes are sent as text. The user reports `Calendars.ReadWrite` already granted; see the [permission guide](graph-permissions.md#teams-meeting-creation-permission). Cancel before confirmation makes no write. While processing, the dialog cannot be dismissed as though it had cancelled a sent request.
+
+Use a non-family controlled account to validate the real invitation, Teams URL, self/past-slot restrictions, conflicts in either calendar and double-click handling. Both-calendar checks are a snapshot, not a reservation. Creation errors after sending the POST can have an uncertain result: check Outlook before trying again or reloading. The component retains a per-instance attempt guard and uses Graph transactionId; it does not persist meeting state across reloads. Actual end-to-end meeting validation is pending, and no invitations were sent by the implementation session.
 
 References: [SharePoint REST query operations](https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/use-odata-query-operations-in-sharepoint-rest-requests), [Teams UPN chat links](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/deep-link-teams).
