@@ -17,7 +17,7 @@ Add optional SMTP email to Expert and the SharePoint Person projection/schema (`
 
 **Render the compact Availability panel**
 
-Create ExpertAvailabilityPanel using Fluent v9 and the typed service. Show local date/time-zone context, 18 accessible segments, legend, current-slot outline, local loading and friendly unavailable/error states. Provide Refresh/retry; clear results and ignore stale requests when the expert changes or the panel unmounts.
+Create ExpertAvailabilityPanel using Fluent v9 and the typed service. Show local date/time-zone context and the 18 loaded slots in Morning/Afternoon pages, with larger time-labeled blocks, local arrows, responsive one/two-row layouts, legend, current-slot outline, local loading and friendly unavailable/error states. Provide Refresh/retry; clear results and ignore stale requests when the expert changes or the panel unmounts.
 
 - Acceptance: Free/Tentative/Busy/Out of Office are identifiable beyond color; no event details appear. The marker only applies inside the window, and a local clock update makes no Graph call. Refresh is disabled while pending and recomputes today. Only the current panel's result is retained in memory.
 - Verification: Review the lifecycle and labels; manually check all four statuses, boundaries, loading, unavailable/failed data, both themes and narrow-card layout after integration. No synthetic availability in the live path.

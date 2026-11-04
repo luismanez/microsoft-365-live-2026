@@ -34,6 +34,8 @@ Live profile photos use delegated Microsoft Graph through SPFx's MSGraphClientV3
 
 Calendar availability uses `POST /me/calendar/getSchedule` with only the selected expert's SMTP email from the SharePoint Person field. Its 18 half-hour slots show Free, Tentative, Busy or Out of Office with text markers and tooltips. Times are normalized to UTC for Graph and displayed locally. The panel keeps only its active result, ignores stale responses, and clears when another expert is selected, filters hide it, or fullscreen closes. Event details are discarded, and Schedule remains a preview. Mock mode makes no calendar calls. Recheck the previously observed `Calendars.Read` consent, or follow the guide for `Calendars.ReadBasic` when no compatible permission exists; actual mailbox/policy access still requires a tenant check.
 
+The timeline displays Morning (09:00–14:00, ten slots) or Afternoon (14:00–18:00, eight slots), with arrows disabled at the ends. Blocks are 56 px high and show their start time plus a larger status marker. Each period uses two rows in narrow cards and one row from 600 px of panel width. Initial selection follows the local hour (afternoon from 14:00); Refresh preserves it. Period arrows only slice the already loaded day and make no Graph requests.
+
 ## Session resources
 
 - [SharePoint list setup and sample data](docs/sharepoint-setup.md)
