@@ -47,6 +47,16 @@ The component always checks the tenant root, even when this Workbench is opened 
 
 If upgrading an already deployed package, increase the solution/package version as required by the tenant before uploading the new build. Keep identities stable. This implementation does not upload, sync, grant permissions, create lists or modify the tenant automatically.
 
+## Introduce me release
+
+The initial Introduce me release uses app version `1.0.3` and SharePoint solution version `1.0.0.3`, retaining the existing IDs, icons and single generated agent ZIP. This release changes the agent's drafting instructions as well as the UI, so replace/enable the sppkg and select **Add to Teams** again. Keep the existing agent in Copilot, allow propagation, reload and start a new conversation.
+
+The current local solution `1.0.0.4` is a component-only retry: its model-context label contains no behavioral directives. Agent `1.0.3` and its instructions are unchanged. If that agent version is already synchronized, replace/enable the sppkg and test in a new conversation without another Add to Teams. The reported conversation block is still under investigation; see the [recorded comparison and retry](copilot-invocation.md#investigating-the-rejected-follow-up).
+
+Search for a supported skill, open fullscreen and choose **Introduce me**. Validate that Copilot receives only the selected profile and produces the draft in the conversation with exactly three questions, without another search or external message. Use the [invocation checks](copilot-invocation.md#introduce-me-contextual-drafting) and [demo segment](demo-runbook.md#introduce-me-segment). No additional Graph consent is required for the action. Workbench can show local UI/errors; only deployed Copilot verifies the conversation result.
+
+These are release instructions, not evidence of a tenant upload or successful draft. The implementation only prepares the local package; actual host results remain in the shared feature checklist.
+
 ## Manual agent update fallback
 
 If Add to Teams returns a generic server-side error, the app's existing Teams Admin Center details page offers **New version → Upload file**. Use a tenant-bound copy of the generated agent ZIP for that route, not the unmodified `teams/expert-finder.zip`: its `{{TENANT_MCP_URL}}` is normally resolved by SharePoint during synchronization.

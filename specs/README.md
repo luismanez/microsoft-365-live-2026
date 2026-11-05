@@ -22,7 +22,10 @@ This is a community conference demo. Keep the implementation easy to explain, at
 | copilot-integration | Tool descriptions, agent instructions and starters | inline-experience | [Spec](copilot-integration/spec.md), [Tasks](copilot-integration/tasks.md) |
 | sharepoint-integration | Experts list guide, filtered REST provider and identity/photos | expert-data, inline-experience | [Spec](sharepoint-integration/spec.md), [Tasks](sharepoint-integration/tasks.md) |
 | expert-availability | On-demand fullscreen calendar free/busy panel for one selected expert | sharepoint-integration, fullscreen-experience, existing Graph infrastructure | [Spec](expert-availability/spec.md), [Tasks](expert-availability/tasks.md) |
+| introduce-me | Fullscreen selected-profile context and a user-triggered introduction draft in Copilot chat (implemented locally; host acceptance pending) | fullscreen-experience, copilot-integration, public Copilot Bridge | [Spec](introduce-me/spec.md), [Tasks](introduce-me/tasks.md) |
 | demo-readiness | Package, installation notes, demo script and fallback | all above | [Spec](demo-readiness/spec.md), [Tasks](demo-readiness/tasks.md) |
+
+Introduce me is implemented locally; actual host checks remain pending. Its [feature-specific implementation prompt](introduce-me/tasks.md#single-implementation-prompt) selects this work without reopening the baseline implementation.
 
 All detailed task definitions live with their feature. Completion status and observed results live only in tasks/todo.md. The latest written requirements take priority over earlier requirements and over extra details in the promotional mockup. These specs apply only to `src/copilot-expert-finder`; Hello Copilot is outside scope.
 

@@ -143,3 +143,10 @@ Local completion means the code, lawful assets, build/package, setup notes and d
 - [My Day sample](https://github.com/pnp/spfx-copilot-components/tree/main/samples/my-day)
 
 Verify API details against installed declarations and official sources while implementing; do not copy the older sample's entire architecture.
+
+
+## Introduce me extension
+
+The [Introduce me spec](introduce-me/spec.md) adds a user-triggered fullscreen action that publishes only the selected expert's professional context and asks the existing Copilot host to draft an introduction with exactly three relevant questions. It does not add a model/backend, Graph permission, search tool argument or automatic Teams send. Drafting from selected-profile context is distinct from normal expert-search routing. One shared handoff guard prevents concurrent card actions from mixing context; errors stay local and mock/Workbench limitations remain explicit.
+
+This extension is implemented locally, with host acceptance pending. Follow [IM-01 through IM-04](introduce-me/tasks.md) and preserve the no-unit-tests/demo quality bar and existing search, photo, contact and calendar behaviors. Progress and actual host evidence remain in the shared checklist; local build/package verification does not imply tenant deployment or successful model output.

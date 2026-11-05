@@ -4,7 +4,7 @@ Based on the deployed repository implementation, reviewed on 2026-11-05. Stack: 
 
 Use each numbered section as a slide topic. The quoted speaker lines are suggested narration; the code comes from the linked project files. TypeScript/TSX blocks are selected excerpts with surrounding code omitted. JSON blocks show selected properties, and some arrays show one representative item; they are not replacement configuration files.
 
-For a short walkthrough, use **01–08 and 13–14**. Add **09–12** to explain the richer Graph interactions. Put secondary snippets in speaker notes or split them across slides; keep one code block visible at a time.
+For a short walkthrough, use **01–08 and 13–14**. Add **09–12** for Graph interactions and **15** for the user-triggered component-to-Copilot handoff. Put secondary snippets in speaker notes or split them across slides; keep one code block visible at a time.
 
 ## The story to tell
 
@@ -453,7 +453,7 @@ The tooltip explains that this is a meeting created in this session. It does not
 ```json
 {
   "manifestVersion": "1.29",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "id": "9b076d6a-9c80-4c1d-ae8b-83dd4c3184f0",
   "icons": {
     "color": "color.png",
@@ -478,8 +478,8 @@ The tooltip explains that this is a meeting created in this session. It does not
 
 | Version field | Value at review | Meaning |
 | --- | --- | --- |
-| `copilot/manifest.json` → `version` | `1.0.2` | App/baseline-agent release version |
-| `config/package-solution.json` → `solution.version` | `1.0.0.2` | SharePoint solution release version |
+| `copilot/manifest.json` → `version` | `1.0.3` | App/baseline-agent release version |
+| `config/package-solution.json` → `solution.version` | `1.0.0.4` | SharePoint solution release version |
 | `copilot/manifest.json` → `manifestVersion` | `1.29` | App manifest schema |
 | `copilot/declarativeAgent.json` → `version` | `v1.8` | Declarative-agent schema |
 | `copilot/ai-plugin.json` → `schema_version` | `v2.4` | Plugin schema |
@@ -496,7 +496,7 @@ The schema versions are not deployment counters. The component manifest's `versi
 {
   "solution": {
     "id": "aa4326b3-eeff-4ca7-8f74-f695935a8bbb",
-    "version": "1.0.0.2",
+    "version": "1.0.0.4",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true
   },
@@ -566,6 +566,43 @@ npm start -- --nobrowser
 
 Workbench injects tool arguments directly to exercise the component. The deployed Copilot agent additionally validates natural invocation and tool discovery. Use `-developer on` when inspecting tool selection; a new conversation does not bypass discovery propagation.
 
+## 15. Optional: let the component ask Copilot for an introduction
+
+**Files:** [ExpertFinderCopilotComponent.tsx](../src/copilotComponents/expertFinder/ExpertFinderCopilotComponent.tsx), [introduction.ts](../src/copilotComponents/expertFinder/utils/introduction.ts), [ExpertFinder.tsx](../src/copilotComponents/expertFinder/components/ExpertFinder.tsx), [ExpertActions.tsx](../src/copilotComponents/expertFinder/components/ExpertActions.tsx), [instruction.txt](../copilot/instruction.txt).
+
+The fullscreen **Introduce me** button shares a snapshot of the clicked expert. The helper explicitly selects fields instead of sending the whole model:
+
+```typescript
+const profile = {
+  purpose: 'introductionDraft',
+  isFictionalDemoProfile: isDemo,
+  expert: {
+    name: expert.displayName,
+    jobTitle: expert.jobTitle,
+    department: expert.department,
+    skill: expert.skill,
+    shortCV: expert.shortCV
+  }
+};
+```
+
+The helper labels the JSON as untrusted profile data and measures the complete text with TextEncoder, rejecting more than 9,000 UTF-8 bytes before contacting the host. The context contains profile facts and metadata only; behavioral instructions belong in the agent and the separate fixed follow-up, not the context's data label. The entry performs the two public Bridge calls in order:
+
+```typescript
+await bridge.updateModelContextAsync({ content: [createCopilotTextContent(contextText)] }, options);
+if (controller.signal.aborted || this._disposed) throw new Error('The component is closed.');
+const result = await bridge.sendFollowUpMessageAsync([createCopilotTextContent(introductionPrompt)], options);
+if (result.isError) throw new Error('The host rejected the draft request.');
+```
+
+**Explain:** `createCopilotTextContent` creates a block; `updateModelContextAsync` replaces the component's previous model context and returns void. `sendFollowUpMessageAsync` adds a user-triggered message to the existing conversation and returns an acknowledgement, not the generated text. The handler checks `isError`, uses the supported timeout/signal options and aborts pending work at teardown. See the [official context/follow-up guidance](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/copilot/provide-context-to-copilot).
+
+A synchronous ref and shared pending expert ID at the React root block overlapping A/B clicks across cards. Buttons show Requesting draft…; failures stay inline, with no new modal. Rendering, filters, skill/theme/mode changes never call the Bridge by themselves. The new action needs no email/UPN or Graph permission and supports clearly fictional mock profiles.
+
+The agent's drafting branch uses the selected profile without invoking ExpertFinderTool again. It requests a first-person Teams introduction, exactly three numbered relevant questions, supported professional facts and the preceding human request's language. The response belongs in Copilot chat. The user reviews/copies it; the component does not send a Teams message. Acknowledgement, question count, language and tool choice require deployed-host verification.
+
+**Say:** “Copilot can open our app, and a deliberate action in our app can ask Copilot to continue the conversation with the right context.”
+
 ## Permissions slide: keep it to three operations
 
 | Feature | Graph request | Delegated permission used or supported |
@@ -587,7 +624,7 @@ For the actual scope-preserving commands and tenant-specific service-principal l
 - Profile photos use UPN; calendars use SMTP email. These are not interchangeable attributes.
 - Graph photos do not establish that a user has an Exchange mailbox or can organize a Teams meeting.
 - Calendar free/busy does not indicate Teams presence.
-- Schedule is a preview. The availability confirmation creates a real invitation.
+- Schedule is a preview. The availability confirmation creates a real invitation. Introduce me requests a draft in Copilot and sends nothing to Teams.
 - A local Busy mark means the app created an invitation, not that the expert accepted.
 - SharePoint asset deployment and baseline-agent synchronization are separate update steps.
 

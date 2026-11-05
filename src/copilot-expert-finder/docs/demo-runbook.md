@@ -37,6 +37,17 @@ Use a non-family demo expert and a future Free slot today. Past/current slots, t
 
 Manual acceptance still required: self detection, future-slot boundaries, Cancel/no-write behavior, plain-text notes, actual invitation/link, immediate Busy after success, Busy retained after Refresh/expert/mode changes with a stale Free response, no confirmed local booking after failure/uncertainty, either participant becoming Busy before confirmation, no Teams provider, denied access, double clicks and uncertain responses. Use only controlled demo accounts and cancel the rehearsal event manually in Outlook afterward when appropriate. No real meeting was created as an automated build or implementation check.
 
+## Introduce me segment
+
+Use the agent release with the updated drafting instructions synced to Copilot. Either a real expert or a visibly fictional mock profile can demonstrate this flow; it requires no new Graph permission or mailbox.
+
+1. Ask for experts, expand and point to **Introduce me** beside Chat in Teams and Schedule.
+2. Choose one expert. Show the brief **Requesting draft…** state. The component shares a bounded snapshot of that profile through `updateModelContextAsync`, then asks for a draft through `sendFollowUpMessageAsync`.
+3. Read the draft in the Copilot conversation. Check the selected name, first-person introduction and exactly three practical questions about the skill, grounded in the visible profile. Explain that the user reviews/copies the text; this action sends nothing to Teams.
+4. Optionally choose a different expert after the handoff finishes: the next request replaces the profile context. Demonstrate that filters and fullscreen changes remain local interactions rather than automatic follow-ups.
+
+Rehearse Spanish and English human requests, rapid same/different-card clicks, both themes, narrow cards and keyboard activation. Check missing profile text, mock labeling and instruction-like CV content using controlled demo data. Verify no repeat ExpertFinderTool call or external action in developer diagnostics. The component handles Bridge rejection locally; if Workbench cannot continue the conversation, show the error honestly and keep the full drafting demonstration in deployed Copilot. No Bridge call or draft was generated as a local build check.
+
 ## Before going on stage
 
 Check the actual tenant/agent, whether the root Experts list is present and accessible, the resulting data-source label, network/profile images, allowed list access if live, Teams navigation for a tenant user if live, host modes/themes, and the fallback. For calendar reads, verify an accessible mailbox, consent and the returned free/busy snapshot; it is not a guarantee that an expert can accept a meeting. The separate confirmed booking flow sends a real meeting invitation; use only the prepared non-family demo accounts. Keep Hello Copilot separate; this workspace is only the prepared Expert Finder demo.

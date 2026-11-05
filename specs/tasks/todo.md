@@ -57,6 +57,13 @@ The baseline, Graph photos and expert availability are implemented locally. User
 - [x] Immediately mark confirmed meetings Busy locally, retaining the expert/interval across Refresh and panel remounts for the component instance; isolated production build/package passed.
 - [ ] Verify real invitation delivery, Teams link, self/past/no-write cancellation, both-calendar conflicts, duplicate/uncertain outcomes, immediate/retained Busy marks and modal focus with controlled non-family accounts in Workbench/Copilot.
 
+## Introduce me — host acceptance pending
+
+- [x] **IM-01** — [Publish selected context and request a draft](../introduce-me/tasks.md#im-01) — public declarations, source inspection and production build verified locally.
+- [ ] **IM-02** — [Add the fullscreen action and shared pending/error feedback](../introduce-me/tasks.md#im-02) — UI and shared guard implemented; build passes. Workbench themes, keyboard, rapid-click and failure behavior pending.
+- [ ] **IM-03** — [Teach the agent to draft without another search](../introduce-me/tasks.md#im-03) — Instructions and documentation updated. Real Copilot draft, language, question count, selected context and routing pending.
+- [ ] **IM-04** — [Package and record actual demo validation](../introduce-me/tasks.md#im-04) — Local production package and version checks pass. Deployed-host acceptance pending; no tenant changes performed.
+
 ## Final practical checks
 
 - [x] Production build passes and the sppkg/agent ZIP include the required local assets.
@@ -139,3 +146,27 @@ The user approved the demo convention: Experts is in the tenant root. Selection 
 - Final npm run build exited 0 in the actual project folder, without TypeScript/lint errors or warnings. The existing Jest stage found zero tests. Archive verification confirms exactly one embedded agent ZIP, app version 1.0.2 and icon bytes identical to the new source PNGs. No dependencies or permission requests were added.
 - Regenerated /private/tmp/expert-finder-inheritscloud-1.0.2.zip for the optional Teams Admin Center Upload file retry. It retains the release's app identity/version, definitions and new icons, replacing only the runtime MCP placeholder with the inheritscloud tenant/solution URL. All three manifests pass the installed Microsoft schema validator and both ZIP/sppkg integrity checks pass. The regular package retains its deploy-time placeholder for the standard SharePoint synchronization route. No tenant upload, synchronization, permission change or calendar action was performed by the assistant.
 - docs/deployment.md now explains the two icon locations, production build flags, version-state preservation, duplicate ZIP cleanup, manual tenant-bound update route and the observed/pending host evidence.
+
+
+### Introduce me specification and planning (2026-11-05)
+
+- Read the user-provided feature brief and existing spec/task conventions. Added specs/introduce-me/spec.md and tasks.md, linked the feature in the index/global plan and preserved every prior progress entry. This is documentation/planning only; no application, agent instruction, package configuration or generated artifact was changed.
+- Verified the installed SPFx 1.24.1 public declarations: createCopilotTextContent; updateModelContextAsync returning Promise<void>; sendFollowUpMessageAsync returning an acknowledgement with optional isError; request options timeout/signal and replacement-context semantics. Confirmed Sparkle20Regular is already exported by the installed Fluent icons package. The public documentation specifies the 10 KB text-context limit and deployed Copilot acceptance requirement.
+- Planned exactly four sequential tasks with existing build/manual validation, no unit tests/dependencies/Graph consent/extra tool/backend. Fullscreen-only UI, shared click guard, five-field authorized profile context, mock labeling, a conservative byte budget, untrusted-profile handling, drafting instructions and local host errors are explicit.
+- No Bridge call, LLM draft, build, Workbench/Copilot rehearsal, tenant change, message or calendar action was executed for this planning request. IM-01 through IM-04 remain unchecked until implementation and the corresponding actual checks have evidence.
+
+### Introduce me local implementation (2026-11-05)
+
+- Implemented IM-01 -> IM-04 local scope. The helper publishes only name, jobTitle, department, skill and shortCV with purpose/fictional metadata. The complete context is rejected above 9,000 UTF-8 bytes before host calls; profile strings remain explicitly untrusted data, separate from the fixed prompt.
+- The entry awaits updateModelContextAsync before sendFollowUpMessageAsync, checks the acknowledgement's isError, uses 15-second timeout/signal options and aborts at teardown. A synchronous React-root guard serializes card handoffs; only fullscreen cards expose Introduce me, with shared pending state and inline accessible errors. No effect triggers a handoff, no new draft view or Workbench Bridge simulator was added, and mock profiles use the same explicitly fictional context.
+- Updated the existing agent drafting branch, invocation guide, demo runbook, deployment notes and code walkthrough. Drafting requests first person, exactly three numbered relevant questions, supported profile facts and the preceding human request's language, without another search or external send. These are model-dependent acceptance criteria, not output validated by the local build.
+- Three incremental npm run build executions exited 0; the final production build completed without TypeScript/lint errors or warnings. The existing Jest stage found zero tests; no unit tests, dependencies, permission requests or additional tools were added. Archive CRC checks pass; the sppkg embeds exactly one agent ZIP. Agent version is 1.0.3 and solution version is 1.0.0.3, with existing IDs preserved and icon bytes matching the source. Generated ZIP/version state was regenerated through the existing build. The packaged bundle contains the selected-context and ordered Bridge paths.
+- No live Bridge request, LLM draft, browser automation, Workbench/Copilot runtime check, tenant synchronization, permission change or Teams/calendar write was performed. Manual themes/layout/keyboard, same/different-card clicks, failure/oversize/disposal, fictional profiles, actual chat location/context/language/question count/tool diagnostics and regressions remain pending. Deployment must re-sync the baseline agent because instructions changed.
+
+
+### Introduce me blocked conversation investigation (2026-11-05)
+
+- User evidence: Introduce me posts its follow-up, then Copilot refuses and the conversation accepts no further input, including after closing the component. Pasting the identical follow-up manually in a fresh conversation without the component responds and leaves chat usable. The prompt text alone is therefore less likely; context delivery, Bridge integration and host behavior are not yet isolated. No definitive safety-filter or lifecycle cause is claimed.
+- Prepared one controlled component-only change: the context prefix is now a descriptive untrusted-data label without behavioral directives. The five profile fields and purpose/fictional metadata, 9,000-byte guard, full follow-up text, agent instructions, shared concurrency guard, ordered public Bridge calls, cancellation and existing features remain unchanged. No additional close call, delay, retry, dependency, permission or unit test was added.
+- npm run build exited 0 without TypeScript/lint warnings or errors; the existing Jest stage found zero tests. ZIP/sppkg CRC checks pass; solution 1.0.0.4 contains one agent ZIP whose entry contents exactly match the prior agent 1.0.3. The compiled bundle contains the new context label and excludes the removed directive. This retry needs only replacing/enabling the sppkg if agent 1.0.3 is already synchronized. No tenant action, live Bridge call or browser automation was performed by the assistant.
+- Actual draft generation and continued input in a fresh deployed conversation remain pending. This candidate is not a confirmed fix. Updated the invocation/deployment guide and walkthrough to record the comparison and controlled retry; previous host acceptance checkboxes remain open.

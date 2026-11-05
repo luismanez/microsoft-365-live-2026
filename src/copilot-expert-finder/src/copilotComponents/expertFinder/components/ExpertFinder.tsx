@@ -2,7 +2,7 @@ import * as React from 'react';
 import { FluentProvider, IdPrefixProvider, teamsLightTheme, teamsDarkTheme, Spinner, Button, makeStyles, tokens } from '@fluentui/react-components';
 import { Search24Regular } from '@fluentui/react-icons';
 import type { Expert, ExpertPhoto, ExpertPhotos, ExpertSkill } from '../models/Expert';
-import type { IExpertFinderProps } from './IExpertFinderProps';
+import type { IExpertFinderProps, IntroductionAction } from './IExpertFinderProps';
 import { ExpertFinderHeader } from './ExpertFinderHeader';
 import { ExpertFinderInline } from './ExpertFinderInline';
 import { ExpertFinderFullscreen } from './ExpertFinderFullscreen';
@@ -29,6 +29,14 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
   const [filters, setFilters] = React.useState({ ...emptyFilters });
   const [expanding, setExpanding] = React.useState(false);
   const [hostError, setHostError] = React.useState('');
+  const [introducingId, setIntroducingId] = React.useState<string>();
+  const [introductionError, setIntroductionError] = React.useState<IntroductionAction['error']>();
+  const introductionBusy = React.useRef(false);
+  const introductionActive = React.useRef(true);
+  React.useEffect(() => {
+    introductionActive.current = true;
+    return () => { introductionActive.current = false; };
+  }, []);
   React.useEffect(() => { setFilters({ ...emptyFilters }); setHostError(''); }, [skill]);
   const fullscreen = props.hostContext.displayMode === 'fullscreen';
   const canExpand = !fullscreen && (props.hostContext.availableDisplayModes || []).indexOf('fullscreen') !== -1;
@@ -75,6 +83,23 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
     finally { setExpanding(false); }
   };
 
+  const introduce = (expert: Expert): Promise<void> => {
+    if (introductionBusy.current) return Promise.resolve();
+    introductionBusy.current = true;
+    setIntroducingId(expert.id); setIntroductionError(undefined);
+    return props.onIntroduceExpert(expert).then(() => {
+      introductionBusy.current = false;
+      if (introductionActive.current) setIntroducingId(undefined);
+    }).catch((error: unknown) => {
+      introductionBusy.current = false;
+      if (introductionActive.current) {
+        setIntroducingId(undefined);
+        setIntroductionError({ expertId: expert.id,
+          message: error instanceof Error ? error.message : 'Copilot could not request the introduction draft. Please try again.' });
+      }
+    });
+  };
+
   const problem = props.inputError || props.configurationError || (!service ? 'The expert data source is not configured.' : undefined);
   const loading = !problem && (results.skill !== skill || results.status === 'loading');
   const experts = results.skill === skill ? results.experts : [];
@@ -91,6 +116,7 @@ export default function ExpertFinder(props: IExpertFinderProps): React.ReactElem
             : fullscreen ? <ExpertFinderFullscreen key={skill} experts={experts} photos={photos} onPhotoSettled={settlePhoto}
               availabilityService={props.availabilityService}
               meetingService={props.meetingService}
+              introduction={{ pendingExpertId: introducingId, error: introductionError, onRequest: introduce }}
               filters={filters} onFiltersChange={setFilters} isDemo={props.isDemo} onOpenLink={props.onOpenLink} />
             : <><p className={styles.count} role="status">{experts.length} {experts.length === 1 ? 'expert' : 'experts'} found</p>
               <ExpertFinderInline experts={experts} photos={photos} onPhotoSettled={settlePhoto}

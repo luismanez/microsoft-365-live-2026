@@ -64,3 +64,21 @@ Run `npm run build`. Manually check Workbench and Copilot with licensed/unlicens
 ## Expert availability panel
 
 Planned extension: follow [the feature spec](../expert-availability/spec.md) and [four tasks](../expert-availability/tasks.md) in order: AV-01 calendar read → AV-02 compact panel → AV-03 fullscreen selection → AV-04 demo validation/docs. The feature tasks include a single implementation prompt. Existing unfinished host checks remain open; this extension does not reimplement them or change their status. No application code or tenant changes are part of this planning update.
+
+
+## Introduce me
+
+Locally implemented extension; host acceptance pending: [feature spec](../introduce-me/spec.md), [four technical tasks](../introduce-me/tasks.md). Keep all previous unfinished tasks and host checks; this execution makes no tenant changes. No separate tracker or feature framework is introduced.
+
+| Order | Task | Scope | Checkpoint |
+| --- | --- | --- | --- |
+| 1 | IM-01 | Whitelisted context/prompt helper, public Bridge callback and typed props (3 files) | Installed API shapes, byte guard and ordered failure behavior; build |
+| 2 | IM-02 | Fullscreen action and shared React pending/error state (5 files, including the shared props contract) | Build and available UI checks; no host simulator |
+| 3 | IM-03 | Agent drafting branch and demo/invocation/walkthrough docs (4 files) | Preserve search routing; real chat/tool diagnostics when deployed |
+| 4 | IM-04 | Local release/package and honest validation record (4 authored files) | One current agent ZIP, baseline re-sync documented; unavailable host checks pending |
+
+Use one sequential executor: the callback, root state and card props share files. The entry owns actual host calls and teardown cancellation; React owns a synchronous instance-wide guard plus visible pending/error state. One small helper formats the authorized five-field snapshot and constant follow-up, with a 9,000-byte UTF-8 context budget. The task dependency chain is IM-01 -> IM-02 -> IM-03 -> IM-04.
+
+Risks worth checking for this demo: a stale/mixed profile (await the complete update before the follow-up and serialize clicks); oversized or instruction-like CV text (bounded serialized data, no silent shortening, explicit trust boundary); unsupported/rejected Workbench handoff (local error, no substitute generator); model question count/language or repeat search (drafting instructions plus deployed Copilot diagnostics). Bridge acknowledgement is not a returned draft or proof that the model finished. The existing instruction change requires a baseline re-sync after the separately directed deployment.
+
+The [single feature implementation prompt](../introduce-me/tasks.md#single-implementation-prompt) was executed for all authorized local tasks without per-task approval pauses. Implementation and production build/package checks are complete; Workbench/Copilot checks remain pending.
