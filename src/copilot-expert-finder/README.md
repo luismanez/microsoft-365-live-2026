@@ -50,6 +50,7 @@ Build/package checks are local only. Real invitation delivery, self detection, T
 
 ## Session resources
 
+- [Code walkthrough and slide snippets](docs/code-walkthrough.md)
 - [SharePoint list setup and sample data](docs/sharepoint-setup.md)
 - [Graph photo and calendar permissions with M365 CLI](docs/graph-permissions.md)
 - [Build, Workbench and installation](docs/deployment.md)
